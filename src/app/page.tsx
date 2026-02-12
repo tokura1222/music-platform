@@ -1,8 +1,10 @@
-import { songs } from '@/data/songs';
 import SongCard from '@/components/SongCard';
 import styles from './page.module.css';
+import { getSongs } from '@/lib/songs';
 
-export default function Home() {
+export default async function Home() {
+  const songs = await getSongs();
+
   return (
     <div className={`container ${styles.container}`}>
       <section className={styles.hero}>
