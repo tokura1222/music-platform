@@ -1,0 +1,186 @@
+.player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(10, 10, 10, 0.95);
+    border-top: 1px solid var(--card-border);
+    backdrop-filter: blur(20px);
+    padding: 0.75rem 0;
+    z-index: 100;
+    color: var(--foreground);
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Song Info */
+.songInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    background-color: var(--card);
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--foreground);
+}
+
+.artist {
+    font-size: 0.8rem;
+    color: var(--secondary-foreground);
+}
+
+/* Controls */
+.controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.controlBtn {
+    background: none;
+    border: none;
+    color: var(--foreground);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.controlBtn:hover {
+    color: var(--primary);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.playBtn {
+    background-color: var(--foreground);
+    color: var(--background);
+    width: 32px;
+    height: 32px;
+}
+
+.playBtn:hover {
+    transform: scale(1.05);
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.progressContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 500px;
+}
+
+.time {
+    font-size: 0.75rem;
+    color: var(--secondary-foreground);
+    min-width: 35px;
+    text-align: center;
+}
+
+/* Range Inputs */
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--card-border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--foreground);
+    cursor: pointer;
+    transition: transform 0.1s;
+    margin-top: -4px;
+    /* Align thumb vertically */
+}
+
+/* Track for webkit */
+.slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: var(--secondary);
+    border-radius: 2px;
+}
+
+.slider:hover::-webkit-slider-thumb {
+    transform: scale(1.2);
+    background: var(--primary);
+}
+
+/* Volume */
+.volume {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.volumeIcon {
+    color: var(--secondary-foreground);
+}
+
+.volumeSlider {
+    width: 100px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr auto;
+        gap: 0.5rem;
+    }
+
+    .volume {
+        display: none;
+    }
+
+    .controls {
+        flex-direction: row;
+    }
+
+    .progressContainer {
+        display: none;
+        /* Simplify for mobile, or move to top */
+    }
+}
