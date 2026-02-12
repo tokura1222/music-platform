@@ -15,6 +15,12 @@
       "url": "/music/demo2.mp3",
       "coverPath": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop",
       "duration": 210
+    },
+    {
+      "title": "エリーネス須磨のうた",
+      "artist": "N_toku",
+      "url": "/music/エリーネス須磨のうた.mp3",
+      "duration": 13
     }
   ]
 }

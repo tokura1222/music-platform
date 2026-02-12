@@ -2,9 +2,7 @@ backend:
   name: github
   repo: tokura1222/music-platform
   branch: main
-  base_url: https://pauth.vercel.app # Changed back to external auth just in case, or keep local_backend
-  
-local_backend: true
+  base_url: https://pauth.vercel.app 
 
 local_backend: true
 
