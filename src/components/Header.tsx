@@ -10,7 +10,7 @@ export default function Header() {
             <div className={`container ${styles.container}`}>
                 <Link href="/" className={styles.logo}>
                     <Music className={styles.icon} />
-                    <span>Music Platform</span>
+                    <span>Zion online</span>
                 </Link>
 
                 <nav className={styles.nav}>
