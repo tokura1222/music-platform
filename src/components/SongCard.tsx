@@ -2,7 +2,8 @@
 
 import { Song } from '@/data/songs';
 import { useAudio } from '@/context/AudioContext';
-import { Play, Pause, Download } from 'lucide-react';
+import { useSongStats } from '@/hooks/useSongStats';
+import { Play, Pause, Download, Heart, Eye } from 'lucide-react';
 import styles from './SongCard.module.css';
 
 interface SongCardProps {
@@ -11,9 +12,8 @@ interface SongCardProps {
 
 export default function SongCard({ song }: SongCardProps) {
     const { currentSong, isPlaying, playSong, togglePlay } = useAudio();
+    const { stats, liked, trackView, trackDownload, toggleLike } = useSongStats(song.id);
 
-    // Guard against undefined IDs: only consider it the "current song"
-    // if both IDs exist and match, AND we also check the URL matches
     const isCurrentSong = currentSong !== null &&
         currentSong.url === song.url;
     const isThisPlaying = isCurrentSong && isPlaying;
@@ -23,7 +23,18 @@ export default function SongCard({ song }: SongCardProps) {
             togglePlay();
         } else {
             playSong(song);
+            trackView();
         }
+    };
+
+    const handleDownload = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        trackDownload();
+    };
+
+    const formatCount = (n: number) => {
+        if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+        return String(n);
     };
 
     return (
@@ -48,15 +59,34 @@ export default function SongCard({ song }: SongCardProps) {
                     <p className={styles.artist}>{song.artist}</p>
                 </div>
 
-                <a
-                    href={song.url}
-                    download
-                    className={styles.downloadBtn}
-                    title="Download"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Download size={20} />
-                </a>
+                <div className={styles.actions}>
+                    <button
+                        onClick={toggleLike}
+                        className={`${styles.actionBtn} ${liked ? styles.liked : ''}`}
+                        title="Like"
+                    >
+                        <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
+                        <span className={styles.count}>{formatCount(stats.likes)}</span>
+                    </button>
+
+                    <a
+                        href={song.url}
+                        download
+                        className={styles.actionBtn}
+                        title="Download"
+                        onClick={handleDownload}
+                    >
+                        <Download size={16} />
+                        <span className={styles.count}>{formatCount(stats.downloads)}</span>
+                    </a>
+                </div>
+            </div>
+
+            <div className={styles.statsBar}>
+                <span className={styles.stat}>
+                    <Eye size={13} />
+                    {formatCount(stats.views)}
+                </span>
             </div>
         </div>
     );
