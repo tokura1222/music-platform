@@ -37,27 +37,38 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         const updateProgress = () => setProgress(audio.currentTime);
         const updateDuration = () => setDuration(audio.duration);
         const onEnded = () => setIsPlaying(false);
+        const onError = (e: Event) => {
+            console.error("Audio error:", (e.target as HTMLAudioElement).error);
+            setIsPlaying(false);
+        };
 
         audio.addEventListener('timeupdate', updateProgress);
         audio.addEventListener('loadedmetadata', updateDuration);
         audio.addEventListener('ended', onEnded);
+        audio.addEventListener('error', onError);
 
         return () => {
             audio.removeEventListener('timeupdate', updateProgress);
             audio.removeEventListener('loadedmetadata', updateDuration);
             audio.removeEventListener('ended', onEnded);
+            audio.removeEventListener('error', onError);
         };
     }, []);
 
-    const playSong = (song: Song) => {
+    const playSong = async (song: Song) => {
         setCurrentSong(song);
         setIsPlaying(true);
-        // Audio element will auto-play via useEffect due to src change if we implemented it that way, 
-        // but here we wait for the effect or manual trigger. 
-        // Actually, setting src and calling play() is robust.
+
         if (audioRef.current) {
             audioRef.current.src = song.url;
-            audioRef.current.play();
+            audioRef.current.load(); // Explicitly load the new source
+
+            try {
+                await audioRef.current.play();
+            } catch (error) {
+                console.error("Playback failed:", error);
+                setIsPlaying(false);
+            }
         }
     };
 
@@ -118,7 +129,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             setVolume
         }}>
             {children}
-            <audio ref={audioRef} style={{ display: 'none' }} />
+            <audio
+                ref={audioRef}
+                style={{ display: 'none' }}
+                preload="metadata"
+            />
         </AudioContext.Provider>
     );
 }

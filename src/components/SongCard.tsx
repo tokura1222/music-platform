@@ -12,7 +12,10 @@ interface SongCardProps {
 export default function SongCard({ song }: SongCardProps) {
     const { currentSong, isPlaying, playSong, togglePlay } = useAudio();
 
-    const isCurrentSong = currentSong?.id === song.id;
+    // Guard against undefined IDs: only consider it the "current song"
+    // if both IDs exist and match, AND we also check the URL matches
+    const isCurrentSong = currentSong !== null &&
+        currentSong.url === song.url;
     const isThisPlaying = isCurrentSong && isPlaying;
 
     const handlePlayClick = () => {

@@ -2,6 +2,8 @@ import SongCard from '@/components/SongCard';
 import styles from './page.module.css';
 import { getSongs } from '@/lib/songs';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const songs = await getSongs();
 
@@ -18,8 +20,8 @@ export default async function Home() {
       <section>
         <h2 className={styles.sectionTitle}>Featured Tracks</h2>
         <div className={styles.grid}>
-          {songs.map((song) => (
-            <SongCard key={song.id} song={song} />
+          {songs.map((song, index) => (
+            <SongCard key={song.id || `song-${index}`} song={song} />
           ))}
         </div>
       </section>
