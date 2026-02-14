@@ -161,6 +161,14 @@
       "coverPath": "/music/rockaway.jpg",
       "duration": 15,
       "category": "other"
+    },
+    {
+      "category": "reggae",
+      "title": "Rock away",
+      "artist": "toku",
+      "url": "/music/rock-away-_a0f7c05d-2f73-4c12-9292-3a7bf840f74d.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 212
     }
   ]
 }
