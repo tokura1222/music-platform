@@ -6,7 +6,8 @@
       "artist": "toku",
       "url": "/music/s-0001.mp3",
       "coverPath": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "2",
@@ -14,7 +15,8 @@
       "artist": "toku",
       "url": "/music/s-0002.mp3",
       "coverPath": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop",
-      "duration": 14
+      "duration": 14,
+      "category": "other"
     },
     {
       "id": "c31e3a1d-c51d-40e3-880d-505813746267",
@@ -22,7 +24,8 @@
       "artist": "N_toku",
       "url": "/music/s-0003.mp3",
       "duration": 13,
-      "coverPath": "/music/rockaway.jpg"
+      "coverPath": "/music/rockaway.jpg",
+      "category": "other"
     },
     {
       "id": "3aa96bc9-98ce-4cd0-9746-9fee420eba36",
@@ -30,7 +33,8 @@
       "artist": "toku",
       "url": "/music/s-0004.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "069da577-cc22-4877-befb-8282f249a7ee",
@@ -38,7 +42,8 @@
       "url": "/music/s-0005.mp3",
       "coverPath": "/music/rockaway.jpg",
       "artist": "toku",
-      "duration": 18
+      "duration": 18,
+      "category": "other"
     },
     {
       "id": "3bbb44ee-dc32-4c92-9a8a-a0ec3a9d0ced",
@@ -46,7 +51,8 @@
       "url": "/music/s-0006.mp3",
       "coverPath": "/music/rockaway.jpg",
       "artist": "toku",
-      "duration": 18
+      "duration": 18,
+      "category": "other"
     },
     {
       "id": "9d8d40b7-f2da-422f-9a4e-0f338c165b81",
@@ -54,7 +60,8 @@
       "url": "/music/s-0007.mp3",
       "coverPath": "/music/rockaway.jpg",
       "artist": "toku",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "b41ef1c8-d3d4-4108-8ad2-4b07ba57c786",
@@ -62,7 +69,8 @@
       "url": "/music/s-0008.mp3",
       "coverPath": "/music/rockaway.jpg",
       "artist": "toku",
-      "duration": 18
+      "duration": 18,
+      "category": "other"
     },
     {
       "id": "ba99b290-6c11-401b-9992-5e620b204207",
@@ -70,7 +78,8 @@
       "url": "/music/s-0009.mp3",
       "coverPath": "/music/rockaway.jpg",
       "artist": "toku",
-      "duration": 17
+      "duration": 17,
+      "category": "other"
     },
     {
       "id": "6deb20d1-4e16-4fa9-bdb0-bf067e3e03c7",
@@ -78,7 +87,8 @@
       "url": "/music/s-0010.mp3",
       "coverPath": "/music/rockaway.jpg",
       "duration": 15,
-      "artist": "toku"
+      "artist": "toku",
+      "category": "other"
     },
     {
       "id": "652ca3c8-a4fa-44d6-a8f7-7d27002b9adf",
@@ -86,7 +96,8 @@
       "artist": "toku",
       "url": "/music/s-0011.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "1ba75be2-f22b-4c75-9ac8-6f3727959b1f",
@@ -94,7 +105,8 @@
       "artist": "toku",
       "url": "/music/s-0012.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "40accc3f-fcd0-4002-a2bf-e9d83d32563f",
@@ -102,7 +114,8 @@
       "title": "s-0013",
       "url": "/music/s-0013.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "22a68554-92d7-4c83-9b18-e2fb51fd4a89",
@@ -110,7 +123,8 @@
       "artist": "toku",
       "url": "/music/s-0014.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "eef0d9c3-f262-4f54-95e7-9bfa34887363",
@@ -118,7 +132,8 @@
       "artist": "toku",
       "url": "/music/s-0015.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "b6a0a794-6cc5-4809-ac99-eda81b3a2b4e",
@@ -126,7 +141,8 @@
       "artist": "toku",
       "url": "/music/s-0016.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "81623d8c-6397-4a81-b5d3-2130fc0e36cc",
@@ -134,7 +150,8 @@
       "artist": "toku",
       "url": "/music/s-0017.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     },
     {
       "id": "caf193a5-7c85-41b6-9757-9e600a53e3ec",
@@ -142,7 +159,8 @@
       "artist": "toku",
       "url": "/music/s-0018.mp3",
       "coverPath": "/music/rockaway.jpg",
-      "duration": 15
+      "duration": 15,
+      "category": "other"
     }
   ]
 }

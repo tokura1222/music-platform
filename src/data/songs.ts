@@ -6,6 +6,7 @@ export type Song = {
     coverHost?: string;
     coverPath?: string;
     duration: number; // in seconds
+    category?: 'instrument' | 'reggae' | 'other';
 };
 
 export const songs: Song[] = [

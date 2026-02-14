@@ -1,24 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Premium Dark Theme Variables */
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  
-  --primary: #8b5cf6; /* Violet */
+  /* Light Theme with Rasta Accent Colors */
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+
+  --rasta-red: #E3292C;
+  --rasta-yellow: #FED100;
+  --rasta-green: #1B8A2A;
+
+  --primary: var(--rasta-green);
   --primary-foreground: #ffffff;
-  
-  --secondary: #1f1f1f;
-  --secondary-foreground: #a1a1aa;
-  
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
-  
-  --card: #121212;
-  --card-border: #27272a;
-  
-  --radius: 0.5rem;
-  
+
+  --secondary: #f5f5f5;
+  --secondary-foreground: #6b6b6b;
+
+  --accent: #e8e8e8;
+  --accent-foreground: #1a1a1a;
+
+  --card: #ffffff;
+  --card-border: #e5e5e5;
+
+  --radius: 0.75rem;
+
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
@@ -98,11 +102,11 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: var(--secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--secondary);
+  background: var(--accent);
   border-radius: 4px;
 }
 

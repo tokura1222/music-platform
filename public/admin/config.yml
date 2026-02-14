@@ -28,3 +28,11 @@ collections:
               - {label: "Audio File", name: "url", widget: "file"}
               - {label: "Cover Image", name: "coverPath", widget: "image", required: false}
               - {label: "Duration (Seconds)", name: "duration", widget: "number", value_type: "int", min: 0}
+              - label: "Category"
+                name: "category"
+                widget: "select"
+                options:
+                  - {label: "Instrument", value: "instrument"}
+                  - {label: "Reggae", value: "reggae"}
+                  - {label: "Other", value: "other"}
+                default: "other"
