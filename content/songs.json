@@ -169,6 +169,38 @@
       "url": "/music/rock-away-_a0f7c05d-2f73-4c12-9292-3a7bf840f74d.mp3",
       "coverPath": "/music/rockaway.jpg",
       "duration": 212
+    },
+    {
+      "category": "instrument",
+      "title": "m-0001",
+      "artist": "toku",
+      "url": "/music/modern-pop_2c9b4d39-4277-43e5-87bd-41cd339d1860.mp3",
+      "coverPath": "/music/modern-pop_2c9b4d39-4277-43e5-87bd-41cd339d1860.jpeg",
+      "duration": 300
+    },
+    {
+      "category": "instrument",
+      "title": "m-0002",
+      "artist": "toku",
+      "url": "/music/modern-pop_4ec36c23-f306-48af-943f-aa6ad9efdb18.mp3",
+      "coverPath": "/music/modern-pop_4ec36c23-f306-48af-943f-aa6ad9efdb18.jpeg",
+      "duration": 123
+    },
+    {
+      "category": "instrument",
+      "title": "m-0003",
+      "artist": "toku",
+      "url": "/music/modern-pop_5ce1caf3-3605-4aae-8d65-abd9aadfeb39.mp3",
+      "coverPath": "/music/modern-pop_5ce1caf3-3605-4aae-8d65-abd9aadfeb39.jpeg",
+      "duration": 240
+    },
+    {
+      "category": "instrument",
+      "title": "m-0004",
+      "artist": "toku",
+      "url": "/music/modern-pop_21b00264-40d6-468b-8de9-13a58aaffd7d.mp3",
+      "coverPath": "/music/modern-pop_21b00264-40d6-468b-8de9-13a58aaffd7d.jpeg",
+      "duration": 240
     }
   ]
 }
