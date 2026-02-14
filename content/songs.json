@@ -2,26 +2,131 @@
   "songs": [
     {
       "id": "1",
-      "title": "2",
-      "artist": "Antigravity",
-      "url": "/music/エリーネス須磨のうた2.mp3",
+      "title": "s-0001",
+      "artist": "toku",
+      "url": "/music/s-0001.mp3",
       "coverPath": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop",
-      "duration": 13
+      "duration": 15
     },
     {
       "id": "2",
-      "title": "3",
-      "artist": "Antigravity",
-      "url": "/music/エリーネス須磨のうた3.mp3",
+      "title": "s-0002",
+      "artist": "toku",
+      "url": "/music/s-0002.mp3",
       "coverPath": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop",
       "duration": 14
     },
     {
-      "title": "エリーネス須磨のうた",
+      "title": "s-0003",
       "artist": "N_toku",
-      "url": "/music/エリーネス須磨のうた.mp3",
+      "url": "/music/s-0003.mp3",
       "duration": 13,
-      "coverPath": "/music/bbq-2016-4_29_1.jpg"
+      "coverPath": "/music/rockaway.jpg"
+    },
+    {
+      "title": "s-0004",
+      "artist": "toku",
+      "url": "/music/s-0004.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "title": "s-0005",
+      "url": "/music/s-0005.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "artist": "toku",
+      "duration": 18
+    },
+    {
+      "title": "s-0006",
+      "url": "/music/s-0006.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "artist": "toku",
+      "duration": 18
+    },
+    {
+      "title": "s-0007",
+      "url": "/music/s-0007.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "artist": "toku",
+      "duration": 15
+    },
+    {
+      "title": "s-0008",
+      "url": "/music/s-0008.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "artist": "toku",
+      "duration": 18
+    },
+    {
+      "title": "s-0009",
+      "url": "/music/s-0009.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "artist": "toku",
+      "duration": 17
+    },
+    {
+      "title": "s-0010",
+      "url": "/music/s-0010.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15,
+      "artist": "toku"
+    },
+    {
+      "title": "s-0011",
+      "artist": "toku",
+      "url": "/music/s-0011.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "title": "s-0012",
+      "artist": "toku",
+      "url": "/music/s-0012.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "artist": "toku",
+      "title": "s-0013",
+      "url": "/music/s-0013.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "title": "s-0014",
+      "artist": "toku",
+      "url": "/music/s-0014.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "title": "s-0015",
+      "artist": "toku",
+      "url": "/music/s-0015.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "title": "s-0016",
+      "artist": "toku",
+      "url": "/music/s-0016.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "title": "s-0017",
+      "artist": "toku",
+      "url": "/music/s-0017.mp3",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
+    },
+    {
+      "title": "s-0018",
+      "artist": "toku",
+      "url": "/music/rockaway.jpg",
+      "coverPath": "/music/rockaway.jpg",
+      "duration": 15
     }
   ]
 }
