@@ -2,11 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  experimental: {
-    // This is needed for Vercel to include json files read by fs
-    outputFileTracingIncludes: {
-      '/**/*': ['./content/**/*', './public/music/**/*'],
-    },
+  outputFileTracingIncludes: {
+    '/**/*': ['./content/**/*', './public/music/**/*'],
   },
   // Ensure images from external sources (if user uploads via admin) are allowed
   images: {
