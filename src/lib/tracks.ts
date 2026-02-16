@@ -5,16 +5,11 @@ import { Track } from '@/types'
 
 const SONGS_DIR = path.join(process.cwd(), 'content/songs')
 
-export async function getAllTracks(): Promise<Track[]> {
-    // 1. Read JSON files
-    if (!fs.existsSync(SONGS_DIR)) {
-        return []
-    }
-
-    const files = fs.readdirSync(SONGS_DIR).filter(file => file.endsWith('.json'))
-    const tracks: Track[] = []
-
-    for (const file of files) {
+export const getAllTracks = async (): Promise<Track[]> => {
+    try {
+        if (!fs.existsSync(SONGS_DIR)) {
+            return []
+        }
 
         const fileNames = fs.readdirSync(SONGS_DIR)
         const allTracksData = fileNames
@@ -30,7 +25,6 @@ export async function getAllTracks(): Promise<Track[]> {
                 }
             })
 
-        // 2. Fetch stats from Redis
         if (allTracksData.length === 0) return []
 
         // Use pipeline to fetch all stats in one go
@@ -42,7 +36,6 @@ export async function getAllTracks(): Promise<Track[]> {
 
         const results = await pipeline.exec()
 
-        // 3. Combine data
         const tracks: Track[] = allTracksData.map((track: any, index: number) => {
             const playCount = results[index * 2] as number | null
             const likeCount = results[index * 2 + 1] as number | null
@@ -54,11 +47,9 @@ export async function getAllTracks(): Promise<Track[]> {
             }
         })
 
-        // Sort by plays (descending) by default
         return tracks.sort((a, b) => b.plays - a.plays)
     } catch (error) {
         console.error('Error fetching tracks:', error)
-        // Return empty array to prevent crash
         return []
     }
 }
