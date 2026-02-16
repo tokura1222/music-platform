@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminSession } from '@/lib/admin-auth';
+import { commitAndPush, getCurrentStrategy } from '@/lib/git-strategy';
 import path from 'path';
-import fs from 'fs/promises';
 
 export async function POST(request: NextRequest) {
     // Auth check
@@ -36,24 +36,43 @@ export async function POST(request: NextRequest) {
         const baseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
         const uniqueName = `${baseName}_${Date.now()}${ext}`;
 
-        // Save to public/music/
-        const musicDir = path.join(process.cwd(), 'public', 'music');
-        await fs.mkdir(musicDir, { recursive: true });
-        const filePath = path.join(musicDir, uniqueName);
+        // Define paths
+        const relativePath = `public/music/${uniqueName}`;
+        const absolutePath = path.join(process.cwd(), 'public', 'music', uniqueName);
+        const webPath = `/music/${uniqueName}`;
 
+        // Read file content
         const bytes = await file.arrayBuffer();
-        await fs.writeFile(filePath, Buffer.from(bytes));
+        const buffer = Buffer.from(bytes);
+
+        // Commit and push (to GitHub or local)
+        // Note: In Vercel (GitHub strategy), this will push to the repo but the file won't be available
+        // via URL until the deployment finishes.
+        const commitMessage = `Add media file: ${uniqueName}`;
+        const result = await commitAndPush(commitMessage, [
+            {
+                absolutePath,
+                relativePath,
+                content: buffer,
+            },
+        ]);
+
+        if (!result.success) {
+            throw new Error(result.message);
+        }
 
         return NextResponse.json({
             success: true,
-            filePath: `/music/${uniqueName}`,
+            filePath: webPath,
             fileName: uniqueName,
             type: isAudio ? 'audio' : 'image',
+            strategy: getCurrentStrategy(),
+            message: 'ファイルがアップロードされました（デプロイ完了まで反映されません）'
         });
     } catch (error) {
         console.error('Upload error:', error);
         return NextResponse.json(
-            { error: 'ファイルのアップロードに失敗しました' },
+            { error: 'ファイルのアップロードに失敗しました', details: String(error) },
             { status: 500 }
         );
     }

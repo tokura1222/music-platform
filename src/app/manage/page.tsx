@@ -2,6 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import styles from './manage.module.css';
+import { uploadToGitHub } from '@/lib/github-client';
 
 type Status = {
     type: 'success' | 'error' | 'info';
@@ -9,9 +10,16 @@ type Status = {
     details?: string;
 };
 
+type GitConfig = {
+    token: string;
+    repo: string;
+    branch: string;
+};
+
 export default function ManagePage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+    const [gitConfig, setGitConfig] = useState<GitConfig | null>(null);
 
     // Login state
     const [username, setUsername] = useState('');
@@ -25,21 +33,38 @@ export default function ManagePage() {
     const [category, setCategory] = useState('other');
     const [audioFile, setAudioFile] = useState<File | null>(null);
     const [coverFile, setCoverFile] = useState<File | null>(null);
-    const [audioPath, setAudioPath] = useState('');
-    const [coverPath, setCoverPath] = useState('');
     const [publishing, setPublishing] = useState(false);
-    const [uploading, setUploading] = useState(false);
     const [status, setStatus] = useState<Status | null>(null);
 
-    // Check auth on mount
+    // Check auth on mount & get git config
     useEffect(() => {
-        fetch('/api/admin/session')
-            .then(res => {
+        const checkAuth = async () => {
+            try {
+                const res = await fetch('/api/admin/session');
                 setIsAuthenticated(res.ok);
-            })
-            .catch(() => setIsAuthenticated(false))
-            .finally(() => setIsCheckingAuth(false));
+                if (res.ok) {
+                    await fetchGitConfig();
+                }
+            } catch {
+                setIsAuthenticated(false);
+            } finally {
+                setIsCheckingAuth(false);
+            }
+        };
+        checkAuth();
     }, []);
+
+    const fetchGitConfig = async () => {
+        try {
+            const res = await fetch('/api/admin/config');
+            if (res.ok) {
+                const config = await res.json();
+                setGitConfig(config);
+            }
+        } catch (error) {
+            console.error('Failed to fetch git config', error);
+        }
+    };
 
     // ── Login ──
     const handleLogin = async (e: FormEvent) => {
@@ -59,6 +84,7 @@ export default function ManagePage() {
                 setIsAuthenticated(true);
                 setUsername('');
                 setPassword('');
+                fetchGitConfig();
             } else {
                 setLoginError(data.error || 'ログインに失敗しました');
             }
@@ -73,25 +99,26 @@ export default function ManagePage() {
     const handleLogout = async () => {
         await fetch('/api/admin/logout', { method: 'POST' });
         setIsAuthenticated(false);
+        setGitConfig(null);
     };
 
-    // ── File Upload ──
-    const uploadFile = async (file: File): Promise<string> => {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const res = await fetch('/api/admin/upload', {
-            method: 'POST',
-            body: formData,
+    // ── Helpers ──
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const result = reader.result as string;
+                // remove "data:audio/mpeg;base64," prefix
+                const base64 = result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
         });
+    };
 
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.error || 'アップロードに失敗しました');
-        }
-
-        const data = await res.json();
-        return data.filePath;
+    const sanitizeFilename = (name: string) => {
+        return name.replace(/[^a-zA-Z0-9._-]/g, '_');
     };
 
     // ── Publish ──
@@ -99,51 +126,89 @@ export default function ManagePage() {
         e.preventDefault();
         setStatus(null);
 
-        if (!audioFile && !audioPath) {
+        if (!audioFile) {
             setStatus({ type: 'error', message: '音声ファイルを選択してください' });
             return;
         }
 
+        if (!gitConfig) {
+            setStatus({
+                type: 'error',
+                message: 'GitHub設定が読み込めませんでした。環境変数が設定されているか確認してください。'
+            });
+            return;
+        }
+
         try {
-            // Upload files if not already uploaded
-            setUploading(true);
-            let finalAudioPath = audioPath;
-            let finalCoverPath = coverPath;
-
-            if (audioFile && !audioPath) {
-                finalAudioPath = await uploadFile(audioFile);
-                setAudioPath(finalAudioPath);
-            }
-
-            if (coverFile && !coverPath) {
-                finalCoverPath = await uploadFile(coverFile);
-                setCoverPath(finalCoverPath);
-            }
-            setUploading(false);
-
-            // Publish
             setPublishing(true);
-            setStatus({ type: 'info', message: '楽曲を公開中...' });
+            setStatus({ type: 'info', message: 'ファイルを処理中...' });
 
-            const res = await fetch('/api/admin/publish', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title,
-                    artist,
-                    category,
-                    url: finalAudioPath,
-                    coverPath: finalCoverPath || undefined,
-                }),
+            const filesToUpload = [];
+
+            // 1. Audio File
+            const audioExt = audioFile.name.split('.').pop() || 'mp3';
+            const audioFilename = `${sanitizeFilename(title)}_${Date.now()}.${audioExt}`;
+            const audioContent = await fileToBase64(audioFile);
+            const audioPath = `public/music/${audioFilename}`;
+
+            filesToUpload.push({
+                path: audioPath,
+                content: audioContent
             });
 
-            const data = await res.json();
+            // 2. Cover File (Optional)
+            let coverPath = undefined;
+            if (coverFile) {
+                const coverExt = coverFile.name.split('.').pop() || 'jpg';
+                const coverFilename = `${sanitizeFilename(title)}_cover_${Date.now()}.${coverExt}`;
+                const coverContent = await fileToBase64(coverFile);
+                coverPath = `public/music/${coverFilename}`; // full path for git
 
-            if (data.success) {
+                filesToUpload.push({
+                    path: coverPath,
+                    content: coverContent
+                });
+            }
+
+            // 3. JSON Metadata
+            const songId = title
+                .toLowerCase()
+                .replace(/[^a-z0-9\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+/g, '-')
+                .replace(/^-|-$/g, '')
+                || `song-${Date.now()}`;
+
+            const songData = {
+                title,
+                artist,
+                category,
+                url: `/music/${audioFilename}`, // Web path
+                ...(coverPath && { coverPath: `/music/${coverPath.split('/').pop()}` }), // Web path
+            };
+
+            const jsonContent = Buffer.from(JSON.stringify(songData, null, 2)).toString('base64');
+            const jsonPath = `content/songs/${songId}.json`;
+
+            filesToUpload.push({
+                path: jsonPath,
+                content: jsonContent
+            });
+
+            // 4. Upload to GitHub
+            setStatus({ type: 'info', message: 'GitHubへアップロード中...' });
+
+            const result = await uploadToGitHub(
+                gitConfig.token,
+                gitConfig.repo,
+                gitConfig.branch,
+                `Add song: ${title}`,
+                filesToUpload
+            );
+
+            if (result.success) {
                 setStatus({
                     type: 'success',
-                    message: `🎉 サイトの更新が完了しました！ (${data.strategy === 'github-api' ? 'GitHub API' : 'ローカルGit'})`,
-                    details: data.message,
+                    message: '🎉 アップロード成功！ デプロイ完了まで数分お待ちください。',
+                    details: 'GitHubへのプッシュが完了しました。'
                 });
                 // Reset form
                 setTitle('');
@@ -151,23 +216,18 @@ export default function ManagePage() {
                 setCategory('other');
                 setAudioFile(null);
                 setCoverFile(null);
-                setAudioPath('');
-                setCoverPath('');
             } else {
-                setStatus({
-                    type: 'error',
-                    message: data.message || '公開に失敗しました',
-                    details: data.details,
-                });
+                throw new Error(result.message);
             }
+
         } catch (err) {
+            console.error(err);
             setStatus({
                 type: 'error',
                 message: err instanceof Error ? err.message : '予期しないエラーが発生しました',
             });
         } finally {
             setPublishing(false);
-            setUploading(false);
         }
     };
 
@@ -215,6 +275,7 @@ export default function ManagePage() {
                                 autoComplete="current-password"
                             />
                         </div>
+                        {loginLoading && <p style={{ textAlign: 'center', fontSize: '0.8rem' }}>認証中...</p>}
                         {loginError && (
                             <div className={styles.statusError}>{loginError}</div>
                         )}
@@ -223,11 +284,7 @@ export default function ManagePage() {
                             className={styles.submitBtn}
                             disabled={loginLoading}
                         >
-                            {loginLoading ? (
-                                <><span className={styles.spinner} /> ログイン中...</>
-                            ) : (
-                                'ログイン'
-                            )}
+                            ログイン
                         </button>
                     </form>
                 </div>
@@ -242,7 +299,7 @@ export default function ManagePage() {
                 <div>
                     <h1 className={styles.pageTitle}>楽曲管理</h1>
                     <p className={styles.pageDescription}>
-                        楽曲を追加し、サイトに公開できます
+                        ブラウザからGitHubへ直接アップロードします (制限なし)
                     </p>
                 </div>
                 <button onClick={handleLogout} className={styles.logoutBtn}>
@@ -295,16 +352,11 @@ export default function ManagePage() {
                     <div className={styles.fileInputWrapper}>
                         <input
                             type="file"
-                            accept="audio/*"
+                            accept=".mp3,.wav,.ogg,.m4a"
                             className={styles.fileInput}
-                            onChange={e => {
-                                setAudioFile(e.target.files?.[0] || null);
-                                setAudioPath('');
-                            }}
+                            onChange={e => setAudioFile(e.target.files?.[0] || null)}
                         />
-                        {audioPath && (
-                            <p className={styles.fileStatus}>✓ アップロード済み: {audioPath}</p>
-                        )}
+                        {audioFile && <p className={styles.fileStatus}>選択中: {audioFile.name}</p>}
                     </div>
                 </div>
 
@@ -315,14 +367,9 @@ export default function ManagePage() {
                             type="file"
                             accept="image/*"
                             className={styles.fileInput}
-                            onChange={e => {
-                                setCoverFile(e.target.files?.[0] || null);
-                                setCoverPath('');
-                            }}
+                            onChange={e => setCoverFile(e.target.files?.[0] || null)}
                         />
-                        {coverPath && (
-                            <p className={styles.fileStatus}>✓ アップロード済み: {coverPath}</p>
-                        )}
+                        {coverFile && <p className={styles.fileStatus}>選択中: {coverFile.name}</p>}
                     </div>
                 </div>
 
@@ -331,12 +378,10 @@ export default function ManagePage() {
                 <button
                     type="submit"
                     className={styles.submitBtn}
-                    disabled={publishing || uploading}
+                    disabled={publishing}
                 >
-                    {uploading ? (
-                        <><span className={styles.spinner} /> ファイルをアップロード中...</>
-                    ) : publishing ? (
-                        <><span className={styles.spinner} /> 公開してGit Push中...</>
+                    {publishing ? (
+                        <><span className={styles.spinner} /> GitHubへアップロード中...</>
                     ) : (
                         '🚀 公開してGit Push'
                     )}

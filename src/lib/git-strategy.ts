@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import fs from 'fs/promises';
 
 const execAsync = promisify(exec);
 
@@ -177,8 +178,8 @@ export type CommitFile = {
     absolutePath: string;
     /** Repo-relative path (e.g., "content/songs/my-song.json") */
     relativePath: string;
-    /** File content as string (used for GitHub API) */
-    content: string;
+    /** File content as string or Buffer */
+    content: string | Buffer;
 };
 
 /**
@@ -191,12 +192,32 @@ export async function commitAndPush(
     const strategy = getStrategy();
 
     if (strategy === 'github-api') {
-        const githubFiles: GitHubFile[] = files.map(f => ({
-            path: f.relativePath,
-            content: Buffer.from(f.content).toString('base64'),
-        }));
+        const githubFiles: GitHubFile[] = files.map(f => {
+            let contentBase64: string;
+            if (Buffer.isBuffer(f.content)) {
+                contentBase64 = f.content.toString('base64');
+            } else {
+                contentBase64 = Buffer.from(f.content).toString('base64');
+            }
+
+            return {
+                path: f.relativePath,
+                content: contentBase64,
+            };
+        });
         return githubApiCommitAndPush(commitMessage, githubFiles);
     } else {
+        // For local strategy, we need to write files first if they are passed as content
+        // This function assumes files are already written if content is not provided, 
+        // but here we allow writing content.
+
+        // Actually, localGitCommitAndPush only takes paths. 
+        // So we should write the content to disk first.
+        for (const f of files) {
+            await fs.mkdir(path.dirname(f.absolutePath), { recursive: true });
+            await fs.writeFile(f.absolutePath, f.content);
+        }
+
         const absolutePaths = files.map(f => f.absolutePath);
         return localGitCommitAndPush(commitMessage, absolutePaths);
     }
