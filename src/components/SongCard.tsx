@@ -10,6 +10,11 @@ interface SongCardProps {
     song: Song;
 }
 
+const formatCount = (n: number) => {
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+    return String(n);
+};
+
 export default function SongCard({ song }: SongCardProps) {
     const { currentSong, isPlaying, playSong, togglePlay } = useAudio();
     const { stats, liked, trackView, trackDownload, toggleLike } = useSongStats(song.id);
@@ -30,11 +35,6 @@ export default function SongCard({ song }: SongCardProps) {
     const handleDownload = (e: React.MouseEvent) => {
         e.stopPropagation();
         trackDownload();
-    };
-
-    const formatCount = (n: number) => {
-        if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
-        return String(n);
     };
 
     return (

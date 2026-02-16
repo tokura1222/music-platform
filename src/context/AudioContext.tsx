@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Song } from '@/data/songs';
 
 type AudioContextType = {
@@ -55,13 +55,13 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         };
     }, []);
 
-    const playSong = async (song: Song) => {
+    const playSong = useCallback(async (song: Song) => {
         setCurrentSong(song);
         setIsPlaying(true);
 
         if (audioRef.current) {
             audioRef.current.src = song.url;
-            audioRef.current.load(); // Explicitly load the new source
+            audioRef.current.load();
 
             try {
                 await audioRef.current.play();
@@ -70,64 +70,67 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
                 setIsPlaying(false);
             }
         }
-    };
+    }, []);
 
-    const togglePlay = () => {
-        if (!currentSong) return;
+    const togglePlay = useCallback(() => {
+        if (!audioRef.current) return;
 
         if (isPlaying) {
-            audioRef.current?.pause();
+            audioRef.current.pause();
         } else {
-            audioRef.current?.play();
+            audioRef.current.play();
         }
-        setIsPlaying(!isPlaying);
-    };
+        setIsPlaying(prev => !prev);
+    }, [isPlaying]);
 
-    const pause = () => {
+    const pause = useCallback(() => {
         audioRef.current?.pause();
         setIsPlaying(false);
-    };
+    }, []);
 
-    const nextSong = () => {
+    const nextSong = useCallback(() => {
         // Implement playlist logic later
         console.log('Next song');
-    };
+    }, []);
 
-    const prevSong = () => {
+    const prevSong = useCallback(() => {
         // Implement playlist logic later
         console.log('Prev song');
-    };
+    }, []);
 
-    const seek = (time: number) => {
+    const seek = useCallback((time: number) => {
         if (audioRef.current) {
             audioRef.current.currentTime = time;
             setProgress(time);
         }
-    };
+    }, []);
 
-    const setVolume = (vol: number) => {
+    const setVolume = useCallback((vol: number) => {
         if (audioRef.current) {
             audioRef.current.volume = vol;
             setVolumeState(vol);
         }
-    };
+    }, []);
+
+    // Memoize the context value to prevent unnecessary re-renders
+    const value = useMemo<AudioContextType>(() => ({
+        currentSong,
+        isPlaying,
+        playSong,
+        togglePlay,
+        pause,
+        nextSong,
+        prevSong,
+        audioRef,
+        progress,
+        duration,
+        seek,
+        volume,
+        setVolume
+    }), [currentSong, isPlaying, playSong, togglePlay, pause, nextSong, prevSong, progress, duration, seek, volume, setVolume]);
 
     return (
-        <AudioContext.Provider value={{
-            currentSong,
-            isPlaying,
-            playSong,
-            togglePlay,
-            pause,
-            nextSong,
-            prevSong,
-            audioRef,
-            progress,
-            duration,
-            seek,
-            volume,
-            setVolume
-        }}>
+        <AudioContext.Provider value={value}>
             {children}
             <audio
                 ref={audioRef}

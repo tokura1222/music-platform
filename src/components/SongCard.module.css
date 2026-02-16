@@ -3,15 +3,43 @@
     border: 1px solid var(--card-border);
     border-radius: var(--radius);
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s;
     display: flex;
     flex-direction: column;
+    animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Stagger card entrance */
+.card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.card:nth-child(6) {
+    animation-delay: 0.3s;
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--card-hover-border);
+    border-color: var(--card-hover-border);
 }
 
 .imageContainer {
@@ -25,22 +53,22 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card:hover .image {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .playOverlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.35);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.15) 50%, transparent 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
     cursor: pointer;
     color: #fff;
@@ -75,9 +103,9 @@
 }
 
 .artist {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--secondary-foreground);
-    margin-top: 0.1rem;
+    margin-top: 0.15rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -102,28 +130,31 @@
     border: none;
     cursor: pointer;
     font-size: 0.75rem;
-    transition: all 0.2s;
+    font-family: var(--font-sans);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
 }
 
 .actionBtn:hover {
     background-color: var(--accent);
     color: var(--foreground);
+    transform: scale(1.05);
 }
 
 .actionBtn.liked {
     color: var(--rasta-red);
-    background-color: rgba(227, 41, 44, 0.08);
+    background-color: rgba(227, 41, 44, 0.12);
 }
 
 .actionBtn.liked:hover {
-    background-color: rgba(227, 41, 44, 0.15);
+    background-color: rgba(227, 41, 44, 0.2);
 }
 
 .count {
     font-size: 0.7rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Stats bar */
@@ -141,4 +172,5 @@
     gap: 0.3rem;
     font-size: 0.7rem;
     color: var(--secondary-foreground);
+    font-variant-numeric: tabular-nums;
 }

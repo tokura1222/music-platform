@@ -1,9 +1,9 @@
 .footer {
-    border-top: 1px solid var(--card-border);
     padding: 2rem 0;
-    margin-top: auto;
+    border-top: 1px solid var(--card-border);
     color: var(--secondary-foreground);
-    font-size: 0.875rem;
+    font-size: 0.82rem;
+    background-color: var(--background);
 }
 
 .container {
@@ -13,5 +13,14 @@
 }
 
 .credit {
-    opacity: 0.7;
+    opacity: 0.6;
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
 }

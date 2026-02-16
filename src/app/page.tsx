@@ -31,10 +31,12 @@ export default async function Home() {
   return (
     <div className={`container ${styles.container}`}>
       <section className={styles.hero}>
-        <h1 className={styles.heroTitle}>Discover Free Music</h1>
+        <h1 className={styles.heroTitle}>
+          あなたにぴったりの<span className={styles.heroAccent}>音楽</span>を見つけよう
+        </h1>
         <p className={styles.heroSubtitle}>
-          High quality, royalty-free music for your creative projects.
-          No sign up required.
+          フリーで使えるハイクオリティな音楽をお届けします。<br />
+          登録なしで、すぐにお楽しみいただけます。
         </p>
       </section>
 

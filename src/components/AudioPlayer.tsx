@@ -4,29 +4,29 @@ import { useAudio } from '@/context/AudioContext';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
 import styles from './AudioPlayer.module.css';
 
+const formatTime = (time: number) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
 export default function AudioPlayer() {
     const { currentSong, isPlaying, togglePlay, progress, duration, seek, volume, setVolume, nextSong, prevSong } = useAudio();
 
     if (!currentSong) return null;
 
-    const formatTime = (time: number) => {
-        if (isNaN(time)) return '0:00';
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
     return (
         <div className={styles.player}>
             <div className={`container ${styles.container}`}>
                 <div className={styles.songInfo}>
-                    {currentSong.coverPath && (
+                    {currentSong.coverPath ? (
                         <img
                             src={currentSong.coverHost ? `${currentSong.coverHost}${currentSong.coverPath}` : currentSong.coverPath}
                             alt={currentSong.title}
                             className={styles.cover}
                         />
-                    )}
+                    ) : null}
                     <div className={styles.details}>
                         <div className={styles.title}>{currentSong.title}</div>
                         <div className={styles.artist}>{currentSong.artist}</div>
