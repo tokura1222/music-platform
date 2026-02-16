@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { useAudio } from "@/context/AudioContext"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { useDuration } from "@/hooks/useDuration"
 
 interface TrackRowProps {
     track: Track
@@ -16,6 +17,7 @@ interface TrackRowProps {
 export function TrackRow({ track, index }: TrackRowProps) {
     const { playTrack, currentTrack, isPlaying } = useAudio()
     const [isLiked, setIsLiked] = useState(false)
+    const duration = useDuration(track.url)
     const isCurrent = currentTrack?.id === track.id
     const isCurrentPlaying = isCurrent && isPlaying
 
@@ -102,11 +104,18 @@ export function TrackRow({ track, index }: TrackRowProps) {
             </div>
 
             {/* Stats (Hidden on mobile) */}
-            <div className="hidden md:block w-24 text-xs text-muted-foreground">
-                {track.plays.toLocaleString()} plays
+            <div className="hidden md:flex items-center gap-3 w-32 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                    <Play className="h-3 w-3" />
+                    {track.plays.toLocaleString()}
+                </span>
+                <span className="flex items-center gap-1">
+                    <Heart className="h-3 w-3" />
+                    {track.likes.toLocaleString()}
+                </span>
             </div>
-            <div className="hidden sm:block w-16 text-xs text-muted-foreground">
-                {track.duration || "--:--"}
+            <div className="hidden sm:block w-14 text-xs text-muted-foreground text-right">
+                {duration}
             </div>
 
             {/* Actions */}
