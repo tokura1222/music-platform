@@ -1,9 +1,12 @@
 "use client"
 
-import { Play, Heart, Download, MoreHorizontal } from "lucide-react"
-import { Track } from "@/lib/mock-data"
+import { Play, Heart, Download, MoreHorizontal, Pause } from "lucide-react"
+import { Track } from "@/types"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { useAudio } from "@/context/AudioContext"
+import { useState, useEffect } from "react"
+import { cn } from "@/lib/utils"
 
 interface TrackRowProps {
     track: Track
@@ -11,34 +14,90 @@ interface TrackRowProps {
 }
 
 export function TrackRow({ track, index }: TrackRowProps) {
+    const { playTrack, currentTrack, isPlaying } = useAudio()
+    const [isLiked, setIsLiked] = useState(false)
+    const isCurrent = currentTrack?.id === track.id
+    const isCurrentPlaying = isCurrent && isPlaying
+
+    useEffect(() => {
+        // Check local storage for like status
+        const likedSongs = JSON.parse(localStorage.getItem('likedTracks') || '[]')
+        setIsLiked(likedSongs.includes(track.id))
+    }, [track.id])
+
     const handleDownload = () => {
-        toast.success(`Downloaded ${track.title}`, {
+        toast.success(`Downloading ${track.title}...`, {
             description: "Thanks for downloading! Please consider supporting us.",
             action: {
                 label: "Support",
-                onClick: () => document.querySelector<HTMLButtonElement>('[data-donate-trigger]')?.click(), // Hacky but works for prototype
+                onClick: () => document.querySelector<HTMLButtonElement>('[data-donate-trigger]')?.click(),
             },
         })
+        // Real download logic here
+        const link = document.createElement('a')
+        link.href = track.url
+        link.download = `${track.title}.mp3` // approximation
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
+    const handleLike = async () => {
+        const newLikedState = !isLiked
+        setIsLiked(newLikedState)
+
+        // Update Local Storage
+        const likedSongs = JSON.parse(localStorage.getItem('likedTracks') || '[]')
+        if (newLikedState) {
+            if (!likedSongs.includes(track.id)) likedSongs.push(track.id)
+        } else {
+            const index = likedSongs.indexOf(track.id)
+            if (index > -1) likedSongs.splice(index, 1)
+        }
+        localStorage.setItem('likedTracks', JSON.stringify(likedSongs))
+
+        // Update Server (Global Stats) - Only increment on like, don't decrement global stats for local unlike for now (optional choice)
+        // Actually, let's just increment/decrement
+        fetch('/api/tracks/like', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: track.id, increment: newLikedState })
+        })
+
+        toast.success(newLikedState ? "Added to Liked Songs" : "Removed from Liked Songs")
     }
 
     return (
         <div className="group flex items-center gap-4 rounded-md p-2 hover:bg-muted/50 transition-colors">
             {/* Index / Play Button */}
             <div className="w-8 text-center text-sm text-muted-foreground">
-                <span className="group-hover:hidden">{index + 1}</span>
-                <Button variant="ghost" size="icon" className="hidden h-8 w-8 group-hover:inline-flex -ml-2">
-                    <Play className="h-4 w-4 fill-current" />
+                <span className={isCurrentPlaying ? "hidden" : "group-hover:hidden"}>{index + 1}</span>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`h-8 w-8 -ml-2 ${isCurrentPlaying ? "inline-flex text-primary" : "hidden group-hover:inline-flex"}`}
+                    onClick={() => playTrack(track)}
+                >
+                    {isCurrentPlaying ? (
+                        <Pause className="h-4 w-4 fill-current" />
+                    ) : (
+                        <Play className="h-4 w-4 fill-current" />
+                    )}
                 </Button>
             </div>
 
             {/* Cover */}
             <div className="h-10 w-10 flex-none overflow-hidden rounded bg-muted">
-                <img src={track.coverImage} alt={track.title} className="h-full w-full object-cover" />
+                {track.coverPath ? (
+                    <img src={track.coverPath} alt={track.title} className="h-full w-full object-cover" />
+                ) : (
+                    <div className="h-full w-full bg-secondary" />
+                )}
             </div>
 
             {/* Title & Artist */}
             <div className="flex-1 min-w-0">
-                <div className="truncate font-medium text-sm">{track.title}</div>
+                <div className={`truncate font-medium text-sm ${isCurrent ? "text-primary" : ""}`}>{track.title}</div>
                 <div className="truncate text-xs text-muted-foreground">{track.artist}</div>
             </div>
 
@@ -47,13 +106,18 @@ export function TrackRow({ track, index }: TrackRowProps) {
                 {track.plays.toLocaleString()} plays
             </div>
             <div className="hidden sm:block w-16 text-xs text-muted-foreground">
-                {track.duration}
+                {track.duration || "--:--"}
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                    <Heart className="h-4 w-4" />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-8 w-8 hover:text-primary", isLiked ? "text-primary" : "text-muted-foreground")}
+                    onClick={handleLike}
+                >
+                    <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={handleDownload}>
                     <Download className="h-4 w-4" />

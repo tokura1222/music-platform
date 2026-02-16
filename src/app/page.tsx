@@ -3,12 +3,30 @@ import { Separator } from "@/components/ui/separator"
 import { HeroSection } from "@/components/features/hero-section"
 import { TrackCard } from "@/components/features/track-card"
 import { TrackRow } from "@/components/features/track-row"
-import { mockTracks } from "@/lib/mock-data"
+import { getAllTracks } from "@/lib/tracks"
 
-export default function HomePage() {
-  const featuredTrack = mockTracks[0];
-  const newReleases = mockTracks.slice(1, 5);
-  const trending = mockTracks;
+export const dynamic = 'force-dynamic'
+
+export default async function HomePage() {
+  const tracks = await getAllTracks()
+
+  // Fallback if no tracks
+  if (tracks.length === 0) {
+    return (
+      <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold tracking-tight">No Music Found</h2>
+          <p className="text-muted-foreground mt-2">
+            Upload your first track from the <a href="/manage" className="underline hover:text-primary">Manage Dashboard</a>.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const featuredTrack = tracks[0];
+  const newReleases = tracks.slice(0, 5);
+  const trending = [...tracks].sort((a, b) => b.plays - a.plays);
 
   return (
     <div className="h-full px-4 py-6 lg:px-8">
@@ -36,10 +54,6 @@ export default function HomePage() {
               <div className="flex space-x-4 pb-4">
                 {newReleases.map((track) => (
                   <TrackCard key={track.id} track={track} />
-                ))}
-                {/* Duplicate for demo interactions */}
-                {newReleases.map((track) => (
-                  <TrackCard key={`dup-${track.id}`} track={track} />
                 ))}
               </div>
               <ScrollBar orientation="horizontal" />

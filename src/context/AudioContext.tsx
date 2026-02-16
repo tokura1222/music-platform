@@ -1,150 +1,127 @@
-'use client';
+"use client"
 
-import React, { createContext, useContext, useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Song } from '@/data/songs';
+import React, { createContext, useContext, useState, useRef, useEffect } from 'react'
+import { Track } from '@/types'
 
-type AudioContextType = {
-    currentSong: Song | null;
-    isPlaying: boolean;
-    playSong: (song: Song) => void;
-    togglePlay: () => void;
-    pause: () => void;
-    nextSong: () => void;
-    prevSong: () => void;
-    audioRef: React.RefObject<HTMLAudioElement | null>;
-    progress: number;
-    duration: number;
-    seek: (time: number) => void;
-    volume: number;
-    setVolume: (vol: number) => void;
-};
+interface AudioContextType {
+    currentTrack: Track | null
+    isPlaying: boolean
+    volume: number
+    currentTime: number
+    duration: number
+    playTrack: (track: Track) => void
+    togglePlay: () => void
+    seek: (time: number) => void
+    setVolume: (volume: number) => void
+}
 
-const AudioContext = createContext<AudioContextType | undefined>(undefined);
+const AudioContext = createContext<AudioContextType | undefined>(undefined)
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-    const [currentSong, setCurrentSong] = useState<Song | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [volume, setVolumeState] = useState(1);
-
-    const audioRef = useRef<HTMLAudioElement>(null);
+    const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
+    const [isPlaying, setIsPlaying] = useState(false)
+    const [volume, setVolumeState] = useState(1) // 0-1
+    const [currentTime, setCurrentTime] = useState(0)
+    const [duration, setDuration] = useState(0)
+    const audioRef = useRef<HTMLAudioElement | null>(null)
 
     useEffect(() => {
-        const audio = audioRef.current;
-        if (!audio) return;
+        audioRef.current = new Audio()
+        const audio = audioRef.current
 
-        const updateProgress = () => setProgress(audio.currentTime);
-        const updateDuration = () => setDuration(audio.duration);
-        const onEnded = () => setIsPlaying(false);
-        const onError = (e: Event) => {
-            console.error("Audio error:", (e.target as HTMLAudioElement).error);
-            setIsPlaying(false);
-        };
+        const updateTime = () => setCurrentTime(audio.currentTime)
+        const updateDuration = () => setDuration(audio.duration)
+        const onEnded = () => setIsPlaying(false)
 
-        audio.addEventListener('timeupdate', updateProgress);
-        audio.addEventListener('loadedmetadata', updateDuration);
-        audio.addEventListener('ended', onEnded);
-        audio.addEventListener('error', onError);
+        audio.addEventListener('timeupdate', updateTime)
+        audio.addEventListener('loadedmetadata', updateDuration)
+        audio.addEventListener('ended', onEnded)
 
         return () => {
-            audio.removeEventListener('timeupdate', updateProgress);
-            audio.removeEventListener('loadedmetadata', updateDuration);
-            audio.removeEventListener('ended', onEnded);
-            audio.removeEventListener('error', onError);
-        };
-    }, []);
+            audio.pause()
+            audio.removeEventListener('timeupdate', updateTime)
+            audio.removeEventListener('loadedmetadata', updateDuration)
+            audio.removeEventListener('ended', onEnded)
+        }
+    }, [])
 
-    const playSong = useCallback(async (song: Song) => {
-        setCurrentSong(song);
-        setIsPlaying(true);
-
+    useEffect(() => {
         if (audioRef.current) {
-            audioRef.current.src = song.url;
-            audioRef.current.load();
+            audioRef.current.volume = volume
+        }
+    }, [volume])
 
-            try {
-                await audioRef.current.play();
-            } catch (error) {
-                console.error("Playback failed:", error);
-                setIsPlaying(false);
+    const playTrack = async (track: Track) => {
+        if (!audioRef.current) return
+
+        // If same track, just toggle
+        if (currentTrack?.id === track.id) {
+            togglePlay()
+            return
+        }
+
+        // New track
+        setCurrentTrack(track)
+        setIsPlaying(true)
+        audioRef.current.src = track.url
+
+        try {
+            await audioRef.current.play()
+
+            // Setup MediaSession
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: track.artist,
+                    artwork: track.coverPath ? [{ src: track.coverPath, sizes: '512x512', type: 'image/jpeg' }] : []
+                });
             }
+
+            // Increment play count
+            fetch('/api/tracks/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: track.id })
+            })
+        } catch (e) {
+            console.error("Play error:", e)
+            setIsPlaying(false)
         }
-    }, []);
+    }
 
-    const togglePlay = useCallback(() => {
-        if (!audioRef.current) return;
-
+    const togglePlay = () => {
+        if (!audioRef.current || !currentTrack) return
         if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            audioRef.current.play();
+            audioRef.current.pause()
+            setIsPlaying(false)
+        } else { // Resume
+            audioRef.current.play()
+            setIsPlaying(true)
         }
-        setIsPlaying(prev => !prev);
-    }, [isPlaying]);
+    }
 
-    const pause = useCallback(() => {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-    }, []);
+    const seek = (time: number) => {
+        if (!audioRef.current) return
+        audioRef.current.currentTime = time
+        setCurrentTime(time)
+    }
 
-    const nextSong = useCallback(() => {
-        // Implement playlist logic later
-        console.log('Next song');
-    }, []);
-
-    const prevSong = useCallback(() => {
-        // Implement playlist logic later
-        console.log('Prev song');
-    }, []);
-
-    const seek = useCallback((time: number) => {
-        if (audioRef.current) {
-            audioRef.current.currentTime = time;
-            setProgress(time);
-        }
-    }, []);
-
-    const setVolume = useCallback((vol: number) => {
-        if (audioRef.current) {
-            audioRef.current.volume = vol;
-            setVolumeState(vol);
-        }
-    }, []);
-
-    // Memoize the context value to prevent unnecessary re-renders
-    const value = useMemo<AudioContextType>(() => ({
-        currentSong,
-        isPlaying,
-        playSong,
-        togglePlay,
-        pause,
-        nextSong,
-        prevSong,
-        audioRef,
-        progress,
-        duration,
-        seek,
-        volume,
-        setVolume
-    }), [currentSong, isPlaying, playSong, togglePlay, pause, nextSong, prevSong, progress, duration, seek, volume, setVolume]);
+    const setVolume = (vol: number) => {
+        const newVol = Math.max(0, Math.min(1, vol))
+        setVolumeState(newVol)
+    }
 
     return (
-        <AudioContext.Provider value={value}>
+        <AudioContext.Provider value={{ currentTrack, isPlaying, volume, currentTime, duration, playTrack, togglePlay, seek, setVolume }}>
             {children}
-            <audio
-                ref={audioRef}
-                style={{ display: 'none' }}
-                preload="metadata"
-            />
         </AudioContext.Provider>
-    );
+    )
 }
 
 export function useAudio() {
-    const context = useContext(AudioContext);
+    const context = useContext(AudioContext)
     if (context === undefined) {
-        throw new Error('useAudio must be used within an AudioProvider');
+        throw new Error('useAudio must be used within an AudioProvider')
     }
-    return context;
+    return context
 }
