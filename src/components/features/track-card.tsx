@@ -22,7 +22,7 @@ export function TrackCard({ track }: TrackCardProps) {
                     <img
                         src={track.coverPath}
                         alt={track.title}
-                        className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
+                        className="h-full w-full object-contain bg-black/20 transition-all duration-300 group-hover:scale-105"
                     />
                 ) : (
                     <div className="h-full w-full bg-secondary flex items-center justify-center text-muted-foreground">

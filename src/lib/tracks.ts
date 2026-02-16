@@ -30,8 +30,8 @@ export const getAllTracks = async (): Promise<Track[]> => {
         // Use pipeline to fetch all stats in one go
         const pipeline = redis.pipeline()
         allTracksData.forEach((track: any) => {
-            pipeline.get(`track:${track.id}:plays`)
-            pipeline.get(`track:${track.id}:likes`)
+            pipeline.get(`song:${track.id}:plays`)
+            pipeline.get(`song:${track.id}:likes`)
         })
 
         const results = await pipeline.exec()
