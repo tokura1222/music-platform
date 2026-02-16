@@ -3,6 +3,7 @@
 import { Song } from '@/data/songs';
 import { useAudio } from '@/context/AudioContext';
 import { useSongStats } from '@/hooks/useSongStats';
+import Image from 'next/image';
 import { Play, Pause, Download, Heart, Eye } from 'lucide-react';
 import styles from './SongCard.module.css';
 
@@ -40,11 +41,16 @@ export default function SongCard({ song }: SongCardProps) {
     return (
         <div className={styles.card}>
             <div className={styles.imageContainer}>
-                <img
-                    src={song.coverHost ? `${song.coverHost}${song.coverPath}` : song.coverPath}
-                    alt={song.title}
-                    className={styles.image}
-                />
+                {song.coverPath && (
+                    <Image
+                        src={song.coverHost ? `${song.coverHost}${song.coverPath}` : song.coverPath}
+                        alt={song.title}
+                        className={styles.image}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 300px"
+                        unoptimized
+                    />
+                )}
                 <button
                     onClick={handlePlayClick}
                     className={styles.playOverlay}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import useSWR from 'swr';
 
 type SongStats = {
@@ -55,17 +55,11 @@ export function useSongStats(songId: string) {
     );
 
     const stats = data ?? { views: 0, downloads: 0, likes: 0 };
-    const [liked, setLiked] = useState(false);
-
-    // Cache liked state in ref to avoid stale closures
-    const likedRef = useRef(liked);
-    likedRef.current = liked;
-
-    // Load liked state once
-    useEffect(() => {
+    const [liked, setLiked] = useState(() => {
+        if (typeof window === 'undefined') return false;
         const likedSongs = readLikedSongs();
-        setLiked(!!likedSongs[songId]);
-    }, [songId]);
+        return !!likedSongs[songId];
+    });
 
     const trackView = useCallback(async () => {
         try {
@@ -96,8 +90,7 @@ export function useSongStats(songId: string) {
     }, [songId, mutate]);
 
     const toggleLike = useCallback(async () => {
-        const currentLiked = likedRef.current;
-        const newLiked = !currentLiked;
+        const newLiked = !liked;
         const action = newLiked ? 'like' : 'unlike';
 
         // Optimistic update
@@ -125,13 +118,13 @@ export function useSongStats(songId: string) {
         } catch (err) {
             console.error('Failed to toggle like:', err);
             // Revert on error
-            setLiked(currentLiked);
+            setLiked(liked);
             mutate(
                 prev => prev ? { ...prev, likes: prev.likes + (newLiked ? -1 : 1) } : prev,
                 false
             );
         }
-    }, [songId, mutate]);
+    }, [songId, mutate, liked]);
 
     return { stats, liked, trackView, trackDownload, toggleLike };
 }

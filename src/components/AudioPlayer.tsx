@@ -1,6 +1,7 @@
 'use client';
 
 import { useAudio } from '@/context/AudioContext';
+import Image from 'next/image';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
 import styles from './AudioPlayer.module.css';
 
@@ -21,11 +22,16 @@ export default function AudioPlayer() {
             <div className={`container ${styles.container}`}>
                 <div className={styles.songInfo}>
                     {currentSong.coverPath ? (
-                        <img
-                            src={currentSong.coverHost ? `${currentSong.coverHost}${currentSong.coverPath}` : currentSong.coverPath}
-                            alt={currentSong.title}
-                            className={styles.cover}
-                        />
+                        <div className={styles.coverWrapper}>
+                            <Image
+                                src={currentSong.coverHost ? `${currentSong.coverHost}${currentSong.coverPath}` : currentSong.coverPath}
+                                alt={currentSong.title}
+                                className={styles.cover}
+                                fill
+                                sizes="48px"
+                                unoptimized
+                            />
+                        </div>
                     ) : null}
                     <div className={styles.details}>
                         <div className={styles.title}>{currentSong.title}</div>
