@@ -15,48 +15,50 @@ export async function getAllTracks(): Promise<Track[]> {
     const tracks: Track[] = []
 
     for (const file of files) {
-        try {
-            const filePath = path.join(SONGS_DIR, file)
-            const content = fs.readFileSync(filePath, 'utf-8')
-            const data = JSON.parse(content)
-            const id = file.replace('.json', '')
 
-            tracks.push({
-                id,
-                title: data.title,
-                artist: data.artist,
-                url: data.url,
-                coverPath: data.coverPath,
-                category: data.category,
-                plays: 0, // Default, will fetch later
-                likes: 0,
+        const fileNames = fs.readdirSync(SONGS_DIR)
+        const allTracksData = fileNames
+            .filter((fileName) => fileName.endsWith('.json'))
+            .map((fileName) => {
+                const fullPath = path.join(SONGS_DIR, fileName)
+                const fileContents = fs.readFileSync(fullPath, 'utf8')
+                const songData = JSON.parse(fileContents)
+
+                return {
+                    id: fileName.replace(/\.json$/, ''),
+                    ...songData,
+                }
             })
-        } catch (e) {
-            console.error(`Error reading track ${file}:`, e)
-        }
-    }
 
-    // 2. Fetch stats from Redis (Pipeline for performance)
-    if (tracks.length > 0) {
+        // 2. Fetch stats from Redis
+        if (allTracksData.length === 0) return []
+
+        // Use pipeline to fetch all stats in one go
         const pipeline = redis.pipeline()
-        tracks.forEach(track => {
-            pipeline.get<number>(`song:${track.id}:plays`)
-            pipeline.get<number>(`song:${track.id}:likes`)
+        allTracksData.forEach((track: any) => {
+            pipeline.get(`track:${track.id}:plays`)
+            pipeline.get(`track:${track.id}:likes`)
         })
 
-        try {
-            const results = await pipeline.exec()
-            // results structure: [plays1, likes1, plays2, likes2, ...]
-            tracks.forEach((track, index) => {
-                const plays = results[index * 2]
-                const likes = results[index * 2 + 1]
-                track.plays = typeof plays === 'number' ? plays : 0
-                track.likes = typeof likes === 'number' ? likes : 0
-            })
-        } catch (e) {
-            console.error("Failed to fetch stats from Redis", e)
-        }
-    }
+        const results = await pipeline.exec()
 
-    return tracks
+        // 3. Combine data
+        const tracks: Track[] = allTracksData.map((track: any, index: number) => {
+            const playCount = results[index * 2] as number | null
+            const likeCount = results[index * 2 + 1] as number | null
+
+            return {
+                ...track,
+                plays: playCount || 0,
+                likes: likeCount || 0,
+            }
+        })
+
+        // Sort by plays (descending) by default
+        return tracks.sort((a, b) => b.plays - a.plays)
+    } catch (error) {
+        console.error('Error fetching tracks:', error)
+        // Return empty array to prevent crash
+        return []
+    }
 }
