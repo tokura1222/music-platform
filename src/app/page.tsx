@@ -1,59 +1,72 @@
-import SongCard from '@/components/SongCard';
-import styles from './page.module.css';
-import { getSongs } from '@/lib/songs';
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { HeroSection } from "@/components/features/hero-section"
+import { TrackCard } from "@/components/features/track-card"
+import { TrackRow } from "@/components/features/track-row"
+import { mockTracks } from "@/lib/mock-data"
 
-export const dynamic = 'force-dynamic';
-
-const CATEGORY_CONFIG = {
-  instrument: { label: '🎸 Instrument', order: 1 },
-  reggae: { label: '🎶 Reggae', order: 2 },
-  other: { label: '📁 その他', order: 3 },
-} as const;
-
-export default async function Home() {
-  const songs = await getSongs();
-
-  // Group songs by category
-  const grouped = songs.reduce((acc, song) => {
-    const cat = song.category || 'other';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(song);
-    return acc;
-  }, {} as Record<string, typeof songs>);
-
-  // Sort categories by configured order
-  const sortedCategories = Object.entries(grouped).sort(([a], [b]) => {
-    const orderA = CATEGORY_CONFIG[a as keyof typeof CATEGORY_CONFIG]?.order ?? 99;
-    const orderB = CATEGORY_CONFIG[b as keyof typeof CATEGORY_CONFIG]?.order ?? 99;
-    return orderA - orderB;
-  });
+export default function HomePage() {
+  const featuredTrack = mockTracks[0];
+  const newReleases = mockTracks.slice(1, 5);
+  const trending = mockTracks;
 
   return (
-    <div className={`container ${styles.container}`}>
-      <section className={styles.hero}>
-        <h1 className={styles.heroTitle}>
-          あなたにぴったりの<span className={styles.heroAccent}>音楽</span>を見つけよう
-        </h1>
-        <p className={styles.heroSubtitle}>
-          フリーで使えるハイクオリティな音楽をお届けします。<br />
-          登録なしで、すぐにお楽しみいただけます。
-        </p>
-      </section>
+    <div className="h-full px-4 py-6 lg:px-8">
+      <div className="space-y-8">
+        {/* Hero Section */}
+        <section>
+          <HeroSection track={featuredTrack} />
+        </section>
 
-      {sortedCategories.map(([category, categorySongs]) => {
-        const config = CATEGORY_CONFIG[category as keyof typeof CATEGORY_CONFIG]
-          || { label: category };
-        return (
-          <section key={category} className={styles.categorySection}>
-            <h2 className={styles.sectionTitle}>{config.label}</h2>
-            <div className={styles.grid}>
-              {categorySongs.map((song, index) => (
-                <SongCard key={song.id || `song-${index}`} song={song} />
-              ))}
+        {/* New Releases (Horizontal List) */}
+        <section>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                New Releases
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Fresh reggae vibes for you.
+              </p>
             </div>
-          </section>
-        );
-      })}
+          </div>
+          <Separator className="my-4" />
+          <div className="relative">
+            <ScrollArea>
+              <div className="flex space-x-4 pb-4">
+                {newReleases.map((track) => (
+                  <TrackCard key={track.id} track={track} />
+                ))}
+                {/* Duplicate for demo interactions */}
+                {newReleases.map((track) => (
+                  <TrackCard key={`dup-${track.id}`} track={track} />
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
+        </section>
+
+        {/* Trending (Vertical List) */}
+        <section>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Top Charts
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Most played tracks this week.
+              </p>
+            </div>
+          </div>
+          <Separator className="my-4" />
+          <div className="space-y-1">
+            {trending.map((track, i) => (
+              <TrackRow key={track.id} track={track} index={i} />
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
-  );
+  )
 }
