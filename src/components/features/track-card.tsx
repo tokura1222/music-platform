@@ -1,5 +1,3 @@
-"use client"
-
 import { Play, Pause } from "lucide-react"
 import { Track } from "@/types"
 import { Button } from "@/components/ui/button"
