@@ -4,12 +4,24 @@ import { Play, SkipBack, SkipForward, Repeat, Shuffle, Volume2, Mic2, ListMusic,
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
-import { useAudio } from "@/context/AudioContext"
+import { useAudio, useAudioTime } from "@/context/AudioContext"
+import { useState, useEffect } from "react"
 
 interface PlayerProps extends React.HTMLAttributes<HTMLDivElement> { }
 
-export function Player({ className }: PlayerProps) {
-    const { currentTrack, isPlaying, togglePlay, volume, setVolume, currentTime, duration, seek } = useAudio()
+export function Player({ className }: React.HTMLAttributes<HTMLDivElement>) {
+    const { currentTrack, isPlaying, togglePlay, volume, setVolume } = useAudio()
+    const { currentTime, duration, seek } = useAudioTime()
+
+    // Local state for dragging slider to prevent jumpiness
+    const [isDragging, setIsDragging] = useState(false)
+    const [sliderValue, setSliderValue] = useState(0)
+
+    useEffect(() => {
+        if (!isDragging) {
+            setSliderValue(currentTime)
+        }
+    }, [currentTime, isDragging])
 
     const formatTime = (time: number) => {
         if (isNaN(time)) return "0:00"

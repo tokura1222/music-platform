@@ -7,15 +7,19 @@ interface AudioContextType {
     currentTrack: Track | null
     isPlaying: boolean
     volume: number
-    currentTime: number
-    duration: number
     playTrack: (track: Track) => void
     togglePlay: () => void
-    seek: (time: number) => void
     setVolume: (volume: number) => void
 }
 
+interface AudioTimeContextType {
+    currentTime: number
+    duration: number
+    seek: (time: number) => void
+}
+
 const AudioContext = createContext<AudioContextType | undefined>(undefined)
+const AudioTimeContext = createContext<AudioTimeContextType | undefined>(undefined)
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
     const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
@@ -51,12 +55,29 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         }
     }, [volume])
 
-    const playTrack = async (track: Track) => {
+    const togglePlay = React.useCallback(() => {
+        if (!audioRef.current || !currentTrack) return
+        if (isPlaying) {
+            audioRef.current.pause()
+            setIsPlaying(false)
+        } else { // Resume
+            audioRef.current.play()
+            setIsPlaying(true)
+        }
+    }, [currentTrack, isPlaying])
+
+    const playTrack = React.useCallback(async (track: Track) => {
         if (!audioRef.current) return
 
         // If same track, just toggle
         if (currentTrack?.id === track.id) {
-            togglePlay()
+            if (isPlaying) {
+                audioRef.current.pause()
+                setIsPlaying(false)
+            } else {
+                audioRef.current.play()
+                setIsPlaying(true)
+            }
             return
         }
 
@@ -87,33 +108,40 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             console.error("Play error:", e)
             setIsPlaying(false)
         }
-    }
+    }, [currentTrack, isPlaying])
 
-    const togglePlay = () => {
-        if (!audioRef.current || !currentTrack) return
-        if (isPlaying) {
-            audioRef.current.pause()
-            setIsPlaying(false)
-        } else { // Resume
-            audioRef.current.play()
-            setIsPlaying(true)
-        }
-    }
-
-    const seek = (time: number) => {
+    const seek = React.useCallback((time: number) => {
         if (!audioRef.current) return
         audioRef.current.currentTime = time
         setCurrentTime(time)
-    }
+    }, [])
 
-    const setVolume = (vol: number) => {
+    const setVolume = React.useCallback((vol: number) => {
         const newVol = Math.max(0, Math.min(1, vol))
         setVolumeState(newVol)
-    }
+    }, [])
+
+    // Memoize context values to prevent unnecessary re-renders
+    const audioContextValue = React.useMemo(() => ({
+        currentTrack,
+        isPlaying,
+        volume,
+        playTrack,
+        togglePlay,
+        setVolume
+    }), [currentTrack, isPlaying, volume, playTrack, togglePlay, setVolume])
+
+    const audioTimeContextValue = React.useMemo(() => ({
+        currentTime,
+        duration,
+        seek
+    }), [currentTime, duration, seek])
 
     return (
-        <AudioContext.Provider value={{ currentTrack, isPlaying, volume, currentTime, duration, playTrack, togglePlay, seek, setVolume }}>
-            {children}
+        <AudioContext.Provider value={audioContextValue}>
+            <AudioTimeContext.Provider value={audioTimeContextValue}>
+                {children}
+            </AudioTimeContext.Provider>
         </AudioContext.Provider>
     )
 }
@@ -122,6 +150,14 @@ export function useAudio() {
     const context = useContext(AudioContext)
     if (context === undefined) {
         throw new Error('useAudio must be used within an AudioProvider')
+    }
+    return context
+}
+
+export function useAudioTime() {
+    const context = useContext(AudioTimeContext)
+    if (context === undefined) {
+        throw new Error('useAudioTime must be used within an AudioProvider')
     }
     return context
 }
