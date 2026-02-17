@@ -56,9 +56,9 @@ export function Sidebar({ className }: SidebarProps) {
                                 className="w-full justify-start font-medium text-muted-foreground hover:text-foreground"
                                 asChild
                             >
-                                <Link href="/">
+                                <Link href="/" target="_blank" rel="noopener noreferrer">
                                     <Home className="mr-2 h-4 w-4" />
-                                    Back to Site
+                                    サイトを開く
                                 </Link>
                             </Button>
 
