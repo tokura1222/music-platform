@@ -90,11 +90,10 @@ export function Sidebar({ className }: SidebarProps) {
             <div className="space-y-4 py-4">
                 {/* Logo */}
                 <div className="px-3 py-2">
-                    <div className="mb-6 flex items-center px-4">
-                        <Music2 className="mr-2 h-6 w-6 text-primary" />
-                        <h2 className="text-xl font-bold tracking-tight text-primary">
-                            Zion Online
-                        </h2>
+                    <div className="mb-6 px-4">
+                        <Link href="/">
+                            <img src="/logo.png" alt="Zion Online" className="h-12 w-auto object-contain" />
+                        </Link>
                     </div>
 
                     {/* Library */}
