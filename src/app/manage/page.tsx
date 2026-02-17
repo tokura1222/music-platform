@@ -57,17 +57,23 @@ function ManageContent() {
     useEffect(() => {
         if (tabParam === 'songs') {
             setActiveTab('songs');
+        } else {
+            setActiveTab('dashboard');
         }
     }, [tabParam]);
 
     // Check auth on mount & get git config
+    // Check auth on mount & get git config
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const res = await fetch('/api/admin/session');
-                setIsAuthenticated(res.ok);
-                if (res.ok) {
+                // Check if admin_token cookie exists
+                const token = document.cookie.split('; ').find(row => row.startsWith('admin_token='));
+                if (token) {
+                    setIsAuthenticated(true);
                     await fetchGitConfig();
+                } else {
+                    setIsAuthenticated(false);
                 }
             } catch {
                 setIsAuthenticated(false);
@@ -404,17 +410,7 @@ function ManageContent() {
     // ── Admin Dashboard ──
     return (
         <div className={styles.pageContainer}>
-            <div className={styles.topBar}>
-                <div>
-                    <h1 className={styles.pageTitle}>Zion Admin</h1>
-                    <p className={styles.pageDescription}>
-                        プラットフォーム管理パネル
-                    </p>
-                </div>
-                <button onClick={handleLogout} className={styles.logoutBtn}>
-                    ログアウト
-                </button>
-            </div>
+
 
             {/* Tabs */}
             <div className={styles.tabs}>

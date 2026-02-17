@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, Heart, Music2, Piano, Mic2 } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { Home, Heart, Music2, Piano, Mic2, LogOut } from "lucide-react"
+import Cookies from 'js-cookie'
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -59,6 +60,20 @@ export function Sidebar({ className }: SidebarProps) {
                                     <Home className="mr-2 h-4 w-4" />
                                     Back to Site
                                 </Link>
+                            </Button>
+
+                            <Separator className="my-2" />
+
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start font-medium text-red-400 hover:text-red-300 hover:bg-red-900/10"
+                                onClick={() => {
+                                    Cookies.remove('admin_token');
+                                    window.location.href = '/manage/login';
+                                }}
+                            >
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Logout
                             </Button>
                         </div>
                     </div>
