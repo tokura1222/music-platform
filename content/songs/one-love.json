@@ -1,7 +1,8 @@
 {
-  "category": "reggae",
+  "category": "vocal",
   "title": "One Love",
   "artist": "toku",
   "url": "/music/one-love.mp3",
-  "coverPath": "/music/one-love.png"
+  "coverPath": "/music/one-love.png",
+  "genreSlug": "vocal-reggae"
 }

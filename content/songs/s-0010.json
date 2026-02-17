@@ -3,5 +3,6 @@
   "url": "/music/s-0010.mp3",
   "coverPath": "/music/rockaway.jpg",
   "artist": "toku",
-  "category": "other"
+  "category": "vocal",
+  "genreSlug": "vocal-rock"
 }

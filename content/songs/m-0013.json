@@ -1,7 +1,8 @@
 {
-  "category": "instrument",
+  "category": "instrumentals",
   "title": "m-0013",
   "artist": "toku",
   "url": "/music/modern-pop_a5d177eb-638e-4949-8e3d-9d3c8839e484.mp3",
-  "coverPath": "/music/modern-pop_a5d177eb-638e-4949-8e3d-9d3c8839e484.jpeg"
+  "coverPath": "/music/modern-pop_a5d177eb-638e-4949-8e3d-9d3c8839e484.jpeg",
+  "genreSlug": "inst-acoustic"
 }

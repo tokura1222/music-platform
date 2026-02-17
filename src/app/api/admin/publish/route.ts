@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { title, artist, category, url, coverPath } = body;
+        const { title, artist, category, genreSlug, url, coverPath } = body;
 
         if (!title || !artist || !url) {
             return NextResponse.json(
@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
         const songData = {
             title,
             artist,
-            category: category || 'other',
+            category: category || 'vocal',
+            ...(genreSlug && { genreSlug }),
             url,
             ...(coverPath && { coverPath }),
         };

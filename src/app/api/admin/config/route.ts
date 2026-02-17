@@ -19,8 +19,10 @@ export async function GET() {
         );
     }
 
+    // Note: Do not expose GITHUB_TOKEN directly to the client.
+    // The token is used server-side only via the upload/publish API routes.
     return NextResponse.json({
-        token,
+        configured: true,
         repo,
         branch,
     });

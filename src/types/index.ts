@@ -4,11 +4,12 @@ export interface Track {
     artist: string
     url: string
     coverPath?: string
-    category?: string
+    category?: 'instrumentals' | 'vocal' | string
+    genreSlug?: string
     // Stats
     plays: number
     likes: number
-    // Optional metadata not yet in real data
+    // Optional metadata
     bpm?: number
     duration?: string
     genre?: string

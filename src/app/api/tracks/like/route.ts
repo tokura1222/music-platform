@@ -11,9 +11,12 @@ export async function POST(request: Request) {
         if (increment) {
             likes = await redis.incr(key)
         } else {
-            // Prevent negative likes if decr
-            // But decr is atomic, so let's just allow it for now or check
             likes = await redis.decr(key)
+            // Prevent negative likes
+            if (likes < 0) {
+                await redis.set(key, 0)
+                likes = 0
+            }
         }
 
         return NextResponse.json({ likes })

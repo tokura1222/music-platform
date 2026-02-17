@@ -53,3 +53,11 @@ export const getAllTracks = async (): Promise<Track[]> => {
         return []
     }
 }
+
+/**
+ * Get tracks filtered by genreSlug.
+ */
+export const getTracksByGenre = async (genreSlug: string): Promise<Track[]> => {
+    const allTracks = await getAllTracks()
+    return allTracks.filter(track => track.genreSlug === genreSlug)
+}

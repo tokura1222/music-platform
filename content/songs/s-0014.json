@@ -3,5 +3,6 @@
   "artist": "toku",
   "url": "/music/s-0014.mp3",
   "coverPath": "/music/rockaway.jpg",
-  "category": "other"
+  "category": "vocal",
+  "genreSlug": "vocal-rnb"
 }

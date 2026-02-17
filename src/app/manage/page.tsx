@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
+import { GENRES, getGenresByCategory, getGenreBySlug } from '@/lib/genres';
 import styles from './manage.module.css';
-import { uploadToGitHub } from '@/lib/github-client';
 
 type Status = {
     type: 'success' | 'error' | 'info';
@@ -10,16 +10,10 @@ type Status = {
     details?: string;
 };
 
-type GitConfig = {
-    token: string;
-    repo: string;
-    branch: string;
-};
-
 export default function ManagePage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-    const [gitConfig, setGitConfig] = useState<GitConfig | null>(null);
+    const [gitConfigured, setGitConfigured] = useState(false);
 
     // Login state
     const [username, setUsername] = useState('');
@@ -30,7 +24,7 @@ export default function ManagePage() {
     // Song form state
     const [title, setTitle] = useState('');
     const [artist, setArtist] = useState('');
-    const [category, setCategory] = useState('other');
+    const [genreSlug, setGenreSlug] = useState(GENRES[0].slug);
     const [audioFile, setAudioFile] = useState<File | null>(null);
     const [coverFile, setCoverFile] = useState<File | null>(null);
     const [publishing, setPublishing] = useState(false);
@@ -59,7 +53,7 @@ export default function ManagePage() {
             const res = await fetch('/api/admin/config');
             if (res.ok) {
                 const config = await res.json();
-                setGitConfig(config);
+                setGitConfigured(config.configured ?? false);
             }
         } catch (error) {
             console.error('Failed to fetch git config', error);
@@ -99,26 +93,7 @@ export default function ManagePage() {
     const handleLogout = async () => {
         await fetch('/api/admin/logout', { method: 'POST' });
         setIsAuthenticated(false);
-        setGitConfig(null);
-    };
-
-    // ── Helpers ──
-    const fileToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => {
-                const result = reader.result as string;
-                // remove "data:audio/mpeg;base64," prefix
-                const base64 = result.split(',')[1];
-                resolve(base64);
-            };
-            reader.onerror = reject;
-        });
-    };
-
-    const sanitizeFilename = (name: string) => {
-        return name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        setGitConfigured(false);
     };
 
     // ── Publish ──
@@ -131,7 +106,7 @@ export default function ManagePage() {
             return;
         }
 
-        if (!gitConfig) {
+        if (!gitConfigured) {
             setStatus({
                 type: 'error',
                 message: 'GitHub設定が読み込めませんでした。環境変数が設定されているか確認してください。'
@@ -141,83 +116,77 @@ export default function ManagePage() {
 
         try {
             setPublishing(true);
-            setStatus({ type: 'info', message: 'ファイルを処理中...' });
 
-            const filesToUpload = [];
-
-            // 1. Audio File
-            const audioExt = audioFile.name.split('.').pop() || 'mp3';
-            const audioFilename = `${sanitizeFilename(title)}_${Date.now()}.${audioExt}`;
-            const audioContent = await fileToBase64(audioFile);
-            const audioPath = `public/music/${audioFilename}`;
-
-            filesToUpload.push({
-                path: audioPath,
-                content: audioContent
+            // 1. Upload audio file via server API
+            setStatus({ type: 'info', message: '音声ファイルをアップロード中...' });
+            const audioFormData = new FormData();
+            audioFormData.append('file', audioFile);
+            const audioRes = await fetch('/api/admin/upload', {
+                method: 'POST',
+                body: audioFormData,
             });
+            if (!audioRes.ok) {
+                const err = await audioRes.json();
+                throw new Error(err.error || '音声ファイルのアップロードに失敗しました');
+            }
+            const audioData = await audioRes.json();
+            const audioUrl = audioData.filePath; // e.g. /music/filename.mp3
 
-            // 2. Cover File (Optional)
-            let coverPath = undefined;
+            // 2. Upload cover file (optional) via server API
+            let coverPath: string | undefined;
             if (coverFile) {
-                const coverExt = coverFile.name.split('.').pop() || 'jpg';
-                const coverFilename = `${sanitizeFilename(title)}_cover_${Date.now()}.${coverExt}`;
-                const coverContent = await fileToBase64(coverFile);
-                coverPath = `public/music/${coverFilename}`; // full path for git
-
-                filesToUpload.push({
-                    path: coverPath,
-                    content: coverContent
+                setStatus({ type: 'info', message: 'カバー画像をアップロード中...' });
+                const coverFormData = new FormData();
+                coverFormData.append('file', coverFile);
+                const coverRes = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: coverFormData,
                 });
+                if (!coverRes.ok) {
+                    const err = await coverRes.json();
+                    throw new Error(err.error || 'カバー画像のアップロードに失敗しました');
+                }
+                const coverData = await coverRes.json();
+                coverPath = coverData.filePath;
             }
 
-            // 3. JSON Metadata
-            const songId = title
-                .toLowerCase()
-                .replace(/[^a-z0-9\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+/g, '-')
-                .replace(/^-|-$/g, '')
-                || `song-${Date.now()}`;
-
-            const songData = {
-                title,
-                artist,
-                category,
-                url: `/music/${audioFilename}`, // Web path
-                ...(coverPath && { coverPath: `/music/${coverPath.split('/').pop()}` }), // Web path
-            };
-
-            const jsonContent = Buffer.from(JSON.stringify(songData, null, 2)).toString('base64');
-            const jsonPath = `content/songs/${songId}.json`;
-
-            filesToUpload.push({
-                path: jsonPath,
-                content: jsonContent
+            // 3. Publish song metadata via server API
+            setStatus({ type: 'info', message: '楽曲情報を公開中...' });
+            const selectedGenre = getGenreBySlug(genreSlug);
+            const publishRes = await fetch('/api/admin/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    artist,
+                    category: selectedGenre?.category || 'vocal',
+                    genreSlug,
+                    url: audioUrl,
+                    coverPath,
+                }),
             });
 
-            // 4. Upload to GitHub
-            setStatus({ type: 'info', message: 'GitHubへアップロード中...' });
+            if (!publishRes.ok) {
+                const err = await publishRes.json();
+                throw new Error(err.error || '楽曲の公開に失敗しました');
+            }
 
-            const result = await uploadToGitHub(
-                gitConfig.token,
-                gitConfig.repo,
-                gitConfig.branch,
-                `Add song: ${title}`,
-                filesToUpload
-            );
+            const publishData = await publishRes.json();
 
-            if (result.success) {
+            if (publishData.success) {
                 setStatus({
                     type: 'success',
                     message: '🎉 アップロード成功！ デプロイ完了まで数分お待ちください。',
-                    details: 'GitHubへのプッシュが完了しました。'
+                    details: publishData.message
                 });
                 // Reset form
                 setTitle('');
                 setArtist('');
-                setCategory('other');
+                setGenreSlug(GENRES[0].slug);
                 setAudioFile(null);
                 setCoverFile(null);
             } else {
-                throw new Error(result.message);
+                throw new Error(publishData.message || '公開に失敗しました');
             }
 
         } catch (err) {
@@ -299,7 +268,7 @@ export default function ManagePage() {
                 <div>
                     <h1 className={styles.pageTitle}>楽曲管理</h1>
                     <p className={styles.pageDescription}>
-                        ブラウザからGitHubへ直接アップロードします (制限なし)
+                        サーバー経由でGitHubへアップロードします
                     </p>
                 </div>
                 <button onClick={handleLogout} className={styles.logoutBtn}>
@@ -333,15 +302,22 @@ export default function ManagePage() {
                 </div>
 
                 <div className={styles.formGroup}>
-                    <label className={styles.label}>カテゴリ</label>
+                    <label className={styles.label}>ジャンル *</label>
                     <select
                         className={styles.select}
-                        value={category}
-                        onChange={e => setCategory(e.target.value)}
+                        value={genreSlug}
+                        onChange={e => setGenreSlug(e.target.value)}
                     >
-                        <option value="instrument">Instrument</option>
-                        <option value="reggae">Reggae</option>
-                        <option value="other">Other</option>
+                        <optgroup label="Instrumentals">
+                            {getGenresByCategory('instrumentals').map(g => (
+                                <option key={g.slug} value={g.slug}>{g.name}</option>
+                            ))}
+                        </optgroup>
+                        <optgroup label="Vocal Songs">
+                            {getGenresByCategory('vocal').map(g => (
+                                <option key={g.slug} value={g.slug}>{g.name}</option>
+                            ))}
+                        </optgroup>
                     </select>
                 </div>
 
@@ -381,7 +357,7 @@ export default function ManagePage() {
                     disabled={publishing}
                 >
                     {publishing ? (
-                        <><span className={styles.spinner} /> GitHubへアップロード中...</>
+                        <><span className={styles.spinner} /> アップロード中...</>
                     ) : (
                         '🚀 公開してGit Push'
                     )}

@@ -1,7 +1,8 @@
 {
   "title": "JAPAN TOUR",
   "artist": "toku",
-  "category": "reggae",
+  "category": "vocal",
   "url": "/music/JAPAN_TOUR_1771221648073.mp3",
-  "coverPath": "/music/JAPAN_TOUR_cover_1771221648106.png"
+  "coverPath": "/music/JAPAN_TOUR_cover_1771221648106.png",
+  "genreSlug": "vocal-reggae"
 }
