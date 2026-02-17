@@ -10,6 +10,15 @@ type Status = {
     details?: string;
 };
 
+interface Song {
+    id: string;
+    title: string;
+    artist: string;
+    genreSlug?: string;
+    category?: string;
+    [key: string]: any;
+}
+
 export default function ManagePage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -29,6 +38,10 @@ export default function ManagePage() {
     const [coverFile, setCoverFile] = useState<File | null>(null);
     const [publishing, setPublishing] = useState(false);
     const [status, setStatus] = useState<Status | null>(null);
+
+    // Songs list state
+    const [songs, setSongs] = useState<Song[]>([]);
+    const [editingSong, setEditingSong] = useState<Song | null>(null);
 
     // Check auth on mount & get git config
     useEffect(() => {
@@ -59,6 +72,24 @@ export default function ManagePage() {
             console.error('Failed to fetch git config', error);
         }
     };
+
+    const fetchSongs = async () => {
+        try {
+            const res = await fetch('/api/admin/songs');
+            if (res.ok) {
+                const data = await res.json();
+                setSongs(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch songs', error);
+        }
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchSongs();
+        }
+    }, [isAuthenticated]);
 
     // ── Login ──
     const handleLogin = async (e: FormEvent) => {
@@ -101,7 +132,10 @@ export default function ManagePage() {
         e.preventDefault();
         setStatus(null);
 
-        if (!audioFile) {
+        e.preventDefault();
+        setStatus(null);
+
+        if (!editingSong && !audioFile) {
             setStatus({ type: 'error', message: '音声ファイルを選択してください' });
             return;
         }
@@ -117,23 +151,26 @@ export default function ManagePage() {
         try {
             setPublishing(true);
 
-            // 1. Upload audio file via server API
-            setStatus({ type: 'info', message: '音声ファイルをアップロード中...' });
-            const audioFormData = new FormData();
-            audioFormData.append('file', audioFile);
-            const audioRes = await fetch('/api/admin/upload', {
-                method: 'POST',
-                body: audioFormData,
-            });
-            if (!audioRes.ok) {
-                const err = await audioRes.json();
-                throw new Error(err.error || '音声ファイルのアップロードに失敗しました');
+            // 1. Upload audio file via server API (SKIP if editing and no file)
+            let audioUrl = editingSong?.url;
+            if (audioFile) {
+                setStatus({ type: 'info', message: '音声ファイルをアップロード中...' });
+                const audioFormData = new FormData();
+                audioFormData.append('file', audioFile);
+                const audioRes = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: audioFormData,
+                });
+                if (!audioRes.ok) {
+                    const err = await audioRes.json();
+                    throw new Error(err.error || '音声ファイルのアップロードに失敗しました');
+                }
+                const audioData = await audioRes.json();
+                audioUrl = audioData.filePath;
             }
-            const audioData = await audioRes.json();
-            const audioUrl = audioData.filePath; // e.g. /music/filename.mp3
 
             // 2. Upload cover file (optional) via server API
-            let coverPath: string | undefined;
+            let coverPath = editingSong?.coverPath;
             if (coverFile) {
                 setStatus({ type: 'info', message: 'カバー画像をアップロード中...' });
                 const coverFormData = new FormData();
@@ -150,13 +187,17 @@ export default function ManagePage() {
                 coverPath = coverData.filePath;
             }
 
-            // 3. Publish song metadata via server API
-            setStatus({ type: 'info', message: '楽曲情報を公開中...' });
+            // 3. Publish/Update song metadata via server API
+            setStatus({ type: 'info', message: editingSong ? '楽曲情報を更新中...' : '楽曲情報を公開中...' });
             const selectedGenre = getGenreBySlug(genreSlug);
-            const publishRes = await fetch('/api/admin/publish', {
+
+            const apiEndpoint = editingSong ? '/api/admin/edit' : '/api/admin/publish';
+
+            const publishRes = await fetch(apiEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    id: editingSong?.id, // Only for edit
                     title,
                     artist,
                     category: selectedGenre?.category || 'vocal',
@@ -165,6 +206,7 @@ export default function ManagePage() {
                     coverPath,
                 }),
             });
+
 
             if (!publishRes.ok) {
                 const err = await publishRes.json();
@@ -176,15 +218,12 @@ export default function ManagePage() {
             if (publishData.success) {
                 setStatus({
                     type: 'success',
-                    message: '🎉 アップロード成功！ デプロイ完了まで数分お待ちください。',
+                    message: editingSong ? '🎉 更新成功！ デプロイ完了まで数分お待ちください。' : '🎉 アップロード成功！ デプロイ完了まで数分お待ちください。',
                     details: publishData.message
                 });
                 // Reset form
-                setTitle('');
-                setArtist('');
-                setGenreSlug(GENRES[0].slug);
-                setAudioFile(null);
-                setCoverFile(null);
+                handleCancelEdit();
+                fetchSongs(); // Refresh list
             } else {
                 throw new Error(publishData.message || '公開に失敗しました');
             }
@@ -198,6 +237,27 @@ export default function ManagePage() {
         } finally {
             setPublishing(false);
         }
+    };
+
+    const handleEdit = (song: Song) => {
+        setEditingSong(song);
+        setTitle(song.title);
+        setArtist(song.artist);
+        setGenreSlug(song.genreSlug || GENRES[0].slug);
+        setAudioFile(null);
+        setCoverFile(null);
+        setStatus(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingSong(null);
+        setTitle('');
+        setArtist('');
+        setGenreSlug(GENRES[0].slug);
+        setAudioFile(null);
+        setCoverFile(null);
+        setStatus(null);
     };
 
     // ── Loading ──
@@ -266,9 +326,9 @@ export default function ManagePage() {
         <div className={styles.pageContainer}>
             <div className={styles.topBar}>
                 <div>
-                    <h1 className={styles.pageTitle}>楽曲管理</h1>
+                    <h1 className={styles.pageTitle}>{editingSong ? '楽曲の編集' : '楽曲管理'}</h1>
                     <p className={styles.pageDescription}>
-                        サーバー経由でGitHubへアップロードします
+                        {editingSong ? '登録済み楽曲の内容を修正します' : 'サーバー経由でGitHubへアップロードします'}
                     </p>
                 </div>
                 <button onClick={handleLogout} className={styles.logoutBtn}>
@@ -324,7 +384,7 @@ export default function ManagePage() {
                 <hr className={styles.divider} />
 
                 <div className={styles.formGroup}>
-                    <label className={styles.label}>音声ファイル *</label>
+                    <label className={styles.label}>音声ファイル {editingSong ? '(変更する場合のみ)' : '*'}</label>
                     <div className={styles.fileInputWrapper}>
                         <input
                             type="file"
@@ -363,6 +423,17 @@ export default function ManagePage() {
                     )}
                 </button>
 
+                {editingSong && (
+                    <button
+                        type="button"
+                        className={styles.cancelBtn}
+                        onClick={handleCancelEdit}
+                        disabled={publishing}
+                    >
+                        キャンセル
+                    </button>
+                )}
+
                 {status && (
                     <div
                         className={
@@ -379,9 +450,44 @@ export default function ManagePage() {
                                 {status.details}
                             </div>
                         )}
+
                     </div>
                 )}
             </form>
+
+            {/* Songs List */}
+            <div className={styles.songsListSection}>
+                <h2 className={styles.sectionTitle}>登録済み楽曲 ({songs.length})</h2>
+                <div className={styles.tableContainer}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr className={styles.tr}>
+                                <th className={styles.th}>Title</th>
+                                <th className={styles.th}>Artist</th>
+                                <th className={styles.th}>Genre</th>
+                                <th className={styles.th}>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {songs.map((song) => (
+                                <tr key={song.id} className={styles.tr}>
+                                    <td className={styles.td}>{song.title}</td>
+                                    <td className={styles.td}>{song.artist}</td>
+                                    <td className={styles.td}>{song.genreSlug || '-'}</td>
+                                    <td className={styles.td}>
+                                        <button
+                                            className={styles.editBtn}
+                                            onClick={() => handleEdit(song)}
+                                        >
+                                            編集
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }
