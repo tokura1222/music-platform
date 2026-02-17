@@ -2,8 +2,9 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { GENRES, getGenresByCategory, getGenreBySlug } from '@/lib/genres';
-import { Trash2, Edit2, Eye, EyeOff } from 'lucide-react';
+import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music } from 'lucide-react';
 import styles from './manage.module.css';
+import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 
 type Status = {
     type: 'success' | 'error' | 'info';
@@ -45,6 +46,9 @@ export default function ManagePage() {
     const [songs, setSongs] = useState<Song[]>([]);
     const [editingSong, setEditingSong] = useState<Song | null>(null);
     const [genreFilter, setGenreFilter] = useState('all');
+
+    // Tabs state
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'songs'>('dashboard');
 
     // Check auth on mount & get git config
     useEffect(() => {
@@ -392,9 +396,9 @@ export default function ManagePage() {
         <div className={styles.pageContainer}>
             <div className={styles.topBar}>
                 <div>
-                    <h1 className={styles.pageTitle}>{editingSong ? '楽曲の編集' : '楽曲管理'}</h1>
+                    <h1 className={styles.pageTitle}>Zion Admin</h1>
                     <p className={styles.pageDescription}>
-                        {editingSong ? '登録済み楽曲の内容を修正します' : 'サーバー経由でGitHubへアップロードします'}
+                        プラットフォーム管理パネル
                     </p>
                 </div>
                 <button onClick={handleLogout} className={styles.logoutBtn}>
@@ -402,194 +406,227 @@ export default function ManagePage() {
                 </button>
             </div>
 
-            <form onSubmit={handlePublish}>
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>タイトル *</label>
-                    <input
-                        type="text"
-                        className={styles.input}
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                        placeholder="楽曲のタイトル"
-                        required
-                    />
-                </div>
-
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>アーティスト *</label>
-                    <input
-                        type="text"
-                        className={styles.input}
-                        value={artist}
-                        onChange={e => setArtist(e.target.value)}
-                        placeholder="アーティスト名"
-                        required
-                    />
-                </div>
-
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>ジャンル *</label>
-                    <select
-                        className={styles.select}
-                        value={genreSlug}
-                        onChange={e => setGenreSlug(e.target.value)}
-                    >
-                        <optgroup label="Instrumentals">
-                            {getGenresByCategory('instrumentals').map(g => (
-                                <option key={g.slug} value={g.slug}>{g.name}</option>
-                            ))}
-                        </optgroup>
-                        <optgroup label="Vocal Songs">
-                            {getGenresByCategory('vocal').map(g => (
-                                <option key={g.slug} value={g.slug}>{g.name}</option>
-                            ))}
-                        </optgroup>
-                    </select>
-                </div>
-
-                <hr className={styles.divider} />
-
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>音声ファイル {editingSong ? '(変更する場合のみ)' : '*'}</label>
-                    <div className={styles.fileInputWrapper}>
-                        <input
-                            type="file"
-                            accept=".mp3,.wav,.ogg,.m4a"
-                            className={styles.fileInput}
-                            onChange={e => setAudioFile(e.target.files?.[0] || null)}
-                        />
-                        {audioFile && <p className={styles.fileStatus}>選択中: {audioFile.name}</p>}
-                    </div>
-                </div>
-
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>カバー画像（任意）</label>
-                    <div className={styles.fileInputWrapper}>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className={styles.fileInput}
-                            onChange={e => setCoverFile(e.target.files?.[0] || null)}
-                        />
-                        {coverFile && <p className={styles.fileStatus}>選択中: {coverFile.name}</p>}
-                    </div>
-                </div>
-
-                <hr className={styles.divider} />
-
+            {/* Tabs */}
+            <div className={styles.tabs}>
                 <button
-                    type="submit"
-                    className={styles.submitBtn}
-                    disabled={publishing}
+                    className={`${styles.tab} ${activeTab === 'dashboard' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('dashboard')}
                 >
-                    {publishing ? (
-                        <><span className={styles.spinner} /> アップロード中...</>
-                    ) : (
-                        '🚀 公開してGit Push'
-                    )}
+                    <LayoutDashboard className="inline-block w-4 h-4 mr-2" />
+                    Dashboard
                 </button>
+                <button
+                    className={`${styles.tab} ${activeTab === 'songs' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('songs')}
+                >
+                    <Music className="inline-block w-4 h-4 mr-2" />
+                    Songs
+                </button>
+            </div>
 
-                {editingSong && (
+            {/* Dashboard Tab */}
+            {activeTab === 'dashboard' && (
+                <AnalyticsDashboard />
+            )}
+
+            {/* Songs Tab */}
+            <div style={{ display: activeTab === 'songs' ? 'block' : 'none' }}>
+                <div className="mb-6">
+                    <h2 className="text-xl font-bold mb-2">{editingSong ? '楽曲の編集' : '新規楽曲登録'}</h2>
+                    <p className="text-muted-foreground text-sm mb-4">
+                        {editingSong ? '登録済み楽曲の内容を修正します' : 'サーバー経由でGitHubへアップロードします'}
+                    </p>
+                </div>
+
+                <form onSubmit={handlePublish}>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>タイトル *</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            placeholder="楽曲のタイトル"
+                            required
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>アーティスト *</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            value={artist}
+                            onChange={e => setArtist(e.target.value)}
+                            placeholder="アーティスト名"
+                            required
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>ジャンル *</label>
+                        <select
+                            className={styles.select}
+                            value={genreSlug}
+                            onChange={e => setGenreSlug(e.target.value)}
+                        >
+                            <optgroup label="Instrumentals">
+                                {getGenresByCategory('instrumentals').map(g => (
+                                    <option key={g.slug} value={g.slug}>{g.name}</option>
+                                ))}
+                            </optgroup>
+                            <optgroup label="Vocal Songs">
+                                {getGenresByCategory('vocal').map(g => (
+                                    <option key={g.slug} value={g.slug}>{g.name}</option>
+                                ))}
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <hr className={styles.divider} />
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>音声ファイル {editingSong ? '(変更する場合のみ)' : '*'}</label>
+                        <div className={styles.fileInputWrapper}>
+                            <input
+                                type="file"
+                                accept=".mp3,.wav,.ogg,.m4a"
+                                className={styles.fileInput}
+                                onChange={e => setAudioFile(e.target.files?.[0] || null)}
+                            />
+                            {audioFile && <p className={styles.fileStatus}>選択中: {audioFile.name}</p>}
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>カバー画像（任意）</label>
+                        <div className={styles.fileInputWrapper}>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className={styles.fileInput}
+                                onChange={e => setCoverFile(e.target.files?.[0] || null)}
+                            />
+                            {coverFile && <p className={styles.fileStatus}>選択中: {coverFile.name}</p>}
+                        </div>
+                    </div>
+
+                    <hr className={styles.divider} />
+
                     <button
-                        type="button"
-                        className={styles.cancelBtn}
-                        onClick={handleCancelEdit}
+                        type="submit"
+                        className={styles.submitBtn}
                         disabled={publishing}
                     >
-                        キャンセル
-                    </button>
-                )}
-
-                {status && (
-                    <div
-                        className={
-                            status.type === 'success'
-                                ? styles.statusSuccess
-                                : status.type === 'error'
-                                    ? styles.statusError
-                                    : styles.statusInfo
-                        }
-                    >
-                        <div>{status.message}</div>
-                        {status.details && (
-                            <div style={{ marginTop: '0.4rem', opacity: 0.8, fontSize: '0.78rem' }}>
-                                {status.details}
-                            </div>
+                        {publishing ? (
+                            <><span className={styles.spinner} /> アップロード中...</>
+                        ) : (
+                            '🚀 公開してGit Push'
                         )}
+                    </button>
 
+                    {editingSong && (
+                        <button
+                            type="button"
+                            className={styles.cancelBtn}
+                            onClick={handleCancelEdit}
+                            disabled={publishing}
+                        >
+                            キャンセル
+                        </button>
+                    )}
+
+                    {status && (
+                        <div
+                            className={
+                                status.type === 'success'
+                                    ? styles.statusSuccess
+                                    : status.type === 'error'
+                                        ? styles.statusError
+                                        : styles.statusInfo
+                            }
+                        >
+                            <div>{status.message}</div>
+                            {status.details && (
+                                <div style={{ marginTop: '0.4rem', opacity: 0.8, fontSize: '0.78rem' }}>
+                                    {status.details}
+                                </div>
+                            )}
+
+                        </div>
+                    )}
+                </form>
+
+                {/* Songs List */}
+                <div className={styles.songsListSection}>
+                    <div className={styles.filterSection}>
+                        <h2 className={styles.sectionTitle}>登録済み楽曲 ({filteredSongs.length})</h2>
+                        <select
+                            className={styles.filterSelect}
+                            value={genreFilter}
+                            onChange={(e) => setGenreFilter(e.target.value)}
+                        >
+                            <option value="all">全てのジャンル</option>
+                            <optgroup label="Instrumentals">
+                                {getGenresByCategory('instrumentals').map(g => (
+                                    <option key={g.slug} value={g.slug}>{g.name}</option>
+                                ))}
+                            </optgroup>
+                            <optgroup label="Vocal Songs">
+                                {getGenresByCategory('vocal').map(g => (
+                                    <option key={g.slug} value={g.slug}>{g.name}</option>
+                                ))}
+                            </optgroup>
+                        </select>
                     </div>
-                )}
-            </form>
 
-            {/* Songs List */}
-            <div className={styles.songsListSection}>
-                <div className={styles.filterSection}>
-                    <h2 className={styles.sectionTitle}>登録済み楽曲 ({filteredSongs.length})</h2>
-                    <select
-                        className={styles.filterSelect}
-                        value={genreFilter}
-                        onChange={(e) => setGenreFilter(e.target.value)}
-                    >
-                        <option value="all">全てのジャンル</option>
-                        <optgroup label="Instrumentals">
-                            {getGenresByCategory('instrumentals').map(g => (
-                                <option key={g.slug} value={g.slug}>{g.name}</option>
-                            ))}
-                        </optgroup>
-                        <optgroup label="Vocal Songs">
-                            {getGenresByCategory('vocal').map(g => (
-                                <option key={g.slug} value={g.slug}>{g.name}</option>
-                            ))}
-                        </optgroup>
-                    </select>
-                </div>
-
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr className={styles.tr}>
-                                <th className={styles.th}>Title</th>
-                                <th className={styles.th}>Artist</th>
-                                <th className={styles.th}>Genre</th>
-                                <th className={styles.th}>Status</th>
-                                <th className={styles.th}>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredSongs.map((song) => (
-                                <tr key={song.id} className={styles.tr}>
-                                    <td className={styles.td}>{song.title}</td>
-                                    <td className={styles.td}>{song.artist}</td>
-                                    <td className={styles.td}>{song.genreSlug || '-'}</td>
-                                    <td className={styles.td}>
-                                        <button
-                                            className={`${styles.statusBadge} ${song.hidden ? styles.private : styles.public}`}
-                                            onClick={() => handleToggleHidden(song)}
-                                        >
-                                            {song.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
-                                            {song.hidden ? 'Private' : 'Public'}
-                                        </button>
-                                    </td>
-                                    <td className={styles.td}>
-                                        <button
-                                            className={styles.editBtn}
-                                            onClick={() => handleEdit(song)}
-                                            title="編集"
-                                        >
-                                            <Edit2 size={14} />
-                                        </button>
-                                        <button
-                                            className={styles.deleteBtn}
-                                            onClick={() => handleDelete(song)}
-                                            title="削除"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </td>
+                    <div className={styles.tableContainer}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr className={styles.tr}>
+                                    <th className={styles.th}>Title</th>
+                                    <th className={styles.th}>Artist</th>
+                                    <th className={styles.th}>Genre</th>
+                                    <th className={styles.th}>Status</th>
+                                    <th className={styles.th}>Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredSongs.map((song) => (
+                                    <tr key={song.id} className={styles.tr}>
+                                        <td className={styles.td}>{song.title}</td>
+                                        <td className={styles.td}>{song.artist}</td>
+                                        <td className={styles.td}>{song.genreSlug || '-'}</td>
+                                        <td className={styles.td}>
+                                            <button
+                                                className={`${styles.statusBadge} ${song.hidden ? styles.private : styles.public}`}
+                                                onClick={() => handleToggleHidden(song)}
+                                            >
+                                                {song.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
+                                                {song.hidden ? 'Private' : 'Public'}
+                                            </button>
+                                        </td>
+                                        <td className={styles.td}>
+                                            <button
+                                                className={styles.editBtn}
+                                                onClick={() => handleEdit(song)}
+                                                title="編集"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                            <button
+                                                className={styles.deleteBtn}
+                                                onClick={() => handleDelete(song)}
+                                                title="削除"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

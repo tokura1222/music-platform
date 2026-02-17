@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Toaster } from "@/components/ui/sonner"
 
 import { AudioProvider } from '@/context/AudioContext';
+import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 
 export const metadata: Metadata = {
   title: 'Zion Online - Reggae Music Platform',
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className="dark">
       <body className="min-h-screen bg-background antialiased">
+        <AnalyticsTracker />
         <AudioProvider>
           <div className="relative flex min-h-screen flex-col">
             {/* Desktop Sidebar (Fixed Left) */}

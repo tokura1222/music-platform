@@ -6,8 +6,17 @@ export async function POST(request: Request) {
         const { id } = await request.json()
         if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 })
 
-        // Increment plays
-        const plays = await redis.incr(`song:${id}:plays`)
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+        // Increment plays using pipeline
+        const pipeline = redis.pipeline();
+        pipeline.incr(`song:${id}:plays`);
+        pipeline.incr(`stats:plays:daily:${today}`);
+        pipeline.incr(`song:${id}:plays:daily:${today}`); // Track per-song daily stats too
+
+        const results = await pipeline.exec();
+        const plays = results[0] as number;
+
         return NextResponse.json({ plays })
     } catch (error) {
         console.error('Play API Error:', error)

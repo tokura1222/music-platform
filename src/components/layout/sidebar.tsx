@@ -17,6 +17,58 @@ export function Sidebar({ className }: SidebarProps) {
     const instGenres = getGenresByCategory('instrumentals')
     const vocalGenres = getGenresByCategory('vocal')
 
+    // Admin Sidebar
+    if (pathname.startsWith('/manage')) {
+        return (
+            <div className={cn("pb-12 border-r bg-background", className)}>
+                <div className="space-y-4 py-4">
+                    <div className="px-3 py-2">
+                        <div className="mb-6 flex items-center px-4">
+                            <Music2 className="mr-2 h-6 w-6 text-primary" />
+                            <h2 className="text-xl font-bold tracking-tight text-primary">
+                                Zion Admin
+                            </h2>
+                        </div>
+                        <div className="space-y-1">
+                            <Button
+                                variant={pathname === '/manage' || pathname === '/manage/dashboard' ? 'secondary' : 'ghost'}
+                                className="w-full justify-start font-medium"
+                                asChild
+                            >
+                                <Link href="/manage">
+                                    <Home className="mr-2 h-4 w-4" />
+                                    Dashboard
+                                </Link>
+                            </Button>
+                            {/* 
+                            <Button
+                                variant={pathname === '/manage/songs' ? 'secondary' : 'ghost'}
+                                className="w-full justify-start font-medium"
+                                asChild
+                            >
+                                <Link href="/manage">
+                                    <Music2 className="mr-2 h-4 w-4" />
+                                    Songs
+                                </Link>
+                            </Button>
+                            */}
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start font-medium text-muted-foreground hover:text-foreground"
+                                asChild
+                            >
+                                <Link href="/">
+                                    <Home className="mr-2 h-4 w-4" />
+                                    Back to Site
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className={cn("pb-12 border-r bg-background", className)}>
             <div className="space-y-4 py-4">
