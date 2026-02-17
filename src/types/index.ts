@@ -6,6 +6,7 @@ export interface Track {
     coverPath?: string
     category?: 'instrumentals' | 'vocal' | string
     genreSlug?: string
+    hidden?: boolean
     // Stats
     plays: number
     likes: number

@@ -10,6 +10,6 @@ export async function GET() {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tracks = await getAllTracks();
+    const tracks = await getAllTracks({ includeHidden: true });
     return NextResponse.json(tracks);
 }

@@ -36,8 +36,32 @@ async function localGitCommitAndPush(
     try {
         // Stage specified files
         for (const filePath of filePaths) {
+            // Check if file still exists (it might have been deleted by fs.unlink)
+            // But for git add, we might need git rm if it was deleted.
+            // Actually, `git add -A` handles deletions too, but here we add specific files.
+
+            // If we deleted the file via fs.unlink, `git add` limits to that file might be tricky if it doesn't exist.
+            // Better to use `git add .` or check existence.
+
+            // Strategy: 
+            // If the file exists, git add it.
+            // If it doesn't exist, git rm --cached it (or git add it which detects deletion in newer git versions?)
+            // safely use `git add -A` for the specific path?
+
+            // Simpler approach for this specific file array:
+            // Since we passed absolute paths, and we know we touched them.
+            // If we used `fs.unlink`, the file is gone.
+
             const relativePath = path.relative(cwd, filePath);
-            await execAsync(`git add "${relativePath}"`, { cwd });
+
+            // Check existence
+            try {
+                await fs.access(filePath);
+                await execAsync(`git add "${relativePath}"`, { cwd });
+            } catch {
+                // File doesn't exist, so it must be a deletion
+                await execAsync(`git add "${relativePath}"`, { cwd }); // git add handles deletion of tracked files
+            }
         }
 
         // Commit
@@ -68,7 +92,8 @@ async function localGitCommitAndPush(
 
 type GitHubFile = {
     path: string;
-    content: string; // base64 encoded
+    content?: string; // base64 encoded
+    deleted?: boolean;
 };
 
 async function githubApiCommitAndPush(
@@ -104,6 +129,16 @@ async function githubApiCommitAndPush(
         // 3. Create blobs for each file
         const treeItems = [];
         for (const file of files) {
+            if (file.deleted) {
+                treeItems.push({
+                    path: file.path,
+                    mode: '100644' as const,
+                    type: 'blob' as const,
+                    sha: null, // Deletes the file
+                });
+                continue;
+            }
+
             const blobRes = await fetch(`${apiBase}/git/blobs`, {
                 method: 'POST',
                 headers,
@@ -179,7 +214,9 @@ export type CommitFile = {
     /** Repo-relative path (e.g., "content/songs/my-song.json") */
     relativePath: string;
     /** File content as string or Buffer */
-    content: string | Buffer;
+    content?: string | Buffer;
+    /** Whether to delete the file */
+    deleted?: boolean;
 };
 
 /**
@@ -193,11 +230,21 @@ export async function commitAndPush(
 
     if (strategy === 'github-api') {
         const githubFiles: GitHubFile[] = files.map(f => {
+            if (f.deleted) {
+                return {
+                    path: f.relativePath,
+                    deleted: true
+                };
+            }
+
             let contentBase64: string;
-            if (Buffer.isBuffer(f.content)) {
-                contentBase64 = f.content.toString('base64');
+            // f.content should be present if not deleted
+            const content = f.content || '';
+
+            if (Buffer.isBuffer(content)) {
+                contentBase64 = content.toString('base64');
             } else {
-                contentBase64 = Buffer.from(f.content).toString('base64');
+                contentBase64 = Buffer.from(content).toString('base64');
             }
 
             return {
@@ -213,9 +260,21 @@ export async function commitAndPush(
 
         // Actually, localGitCommitAndPush only takes paths. 
         // So we should write the content to disk first.
+        // for local strategy
         for (const f of files) {
-            await fs.mkdir(path.dirname(f.absolutePath), { recursive: true });
-            await fs.writeFile(f.absolutePath, f.content);
+            if (f.deleted) {
+                // If it was already deleted by the caller (like api/admin/delete/route.ts), await fs.unlink might fail.
+                // But localGitCommitAndPush expects the file to be gone or ready to be `git add`ed.
+                // If we want to be sure, we can try to unlink it here too, ignoring errors.
+                try {
+                    await fs.unlink(f.absolutePath);
+                } catch {
+                    // ignore if already deleted
+                }
+            } else if (f.content) {
+                await fs.mkdir(path.dirname(f.absolutePath), { recursive: true });
+                await fs.writeFile(f.absolutePath, f.content);
+            }
         }
 
         const absolutePaths = files.map(f => f.absolutePath);

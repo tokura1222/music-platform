@@ -290,6 +290,29 @@
     color: var(--foreground);
 }
 
+.filterSection {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filterSelect {
+    padding: 0.5rem 1rem;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.4rem;
+    color: var(--foreground);
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.filterSelect option {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
 .tableContainer {
     overflow-x: auto;
     border-radius: var(--radius);
@@ -342,6 +365,52 @@
     border-color: var(--primary);
     color: var(--primary);
     background: rgba(27, 138, 42, 0.1);
+}
+
+.deleteBtn {
+    padding: 0.4rem 0.6rem;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: #ef4444;
+    border-radius: 0.3rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
+}
+
+.deleteBtn:hover {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.statusBadge.public {
+    background: rgba(74, 222, 128, 0.1);
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.2);
+}
+
+.statusBadge.private {
+    background: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+    border-color: rgba(148, 163, 184, 0.2);
+}
+
+.statusBadge:hover {
+    opacity: 0.8;
 }
 
 .cancelBtn {
