@@ -119,6 +119,16 @@ export function Sidebar({ className }: SidebarProps) {
                                 Liked Songs
                             </Link>
                         </Button>
+                        <Button
+                            variant={pathname === '/songs' ? 'secondary' : 'ghost'}
+                            className="w-full justify-start font-medium"
+                            asChild
+                        >
+                            <Link href="/songs">
+                                <Music2 className="mr-2 h-4 w-4" />
+                                All Songs
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 

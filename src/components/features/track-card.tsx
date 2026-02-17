@@ -4,18 +4,20 @@ import { Play, Pause } from "lucide-react"
 import { Track } from "@/types"
 import { Button } from "@/components/ui/button"
 import { useAudio } from "@/context/AudioContext"
+import { cn } from "@/lib/utils"
 
 interface TrackCardProps {
     track: Track
+    className?: string
 }
 
-export function TrackCard({ track }: TrackCardProps) {
+export function TrackCard({ track, className }: TrackCardProps) {
     const { playTrack, currentTrack, isPlaying } = useAudio()
     const isCurrent = currentTrack?.id === track.id
     const isCurrentPlaying = isCurrent && isPlaying
 
     return (
-        <div className="group relative w-[180px] flex-none space-y-3">
+        <div className={cn("group relative w-[180px] flex-none space-y-3", className)}>
             {/* Cover Image Container */}
             <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
                 {track.coverPath ? (
