@@ -176,6 +176,56 @@ export function AnalyticsDashboard() {
                             )}
                         </ScrollArea>
                     </div>
+
+                    {/* Location List (Country) */}
+                    <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
+                        <h3 className="font-semibold leading-none tracking-tight mb-4">
+                            アクセス地域 (Country)
+                        </h3>
+                        <ScrollArea className="h-[200px] w-full pr-4">
+                            {data?.locations?.countries && data.locations.countries.length > 0 ? (
+                                <div className="space-y-4">
+                                    {data.locations.countries.map((loc: any, index: number) => (
+                                        <div key={index} className="flex items-center">
+                                            <div className="ml-4 space-y-1">
+                                                <p className="text-sm font-medium leading-none">{loc.name}</p>
+                                            </div>
+                                            <div className="ml-auto font-medium">{loc.count}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-muted-foreground text-sm py-8 text-center">
+                                    データ計測中...
+                                </div>
+                            )}
+                        </ScrollArea>
+                    </div>
+
+                    {/* Location List (City) */}
+                    <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
+                        <h3 className="font-semibold leading-none tracking-tight mb-4">
+                            アクセス地域 (City)
+                        </h3>
+                        <ScrollArea className="h-[200px] w-full pr-4">
+                            {data?.locations?.cities && data.locations.cities.length > 0 ? (
+                                <div className="space-y-4">
+                                    {data.locations.cities.map((loc: any, index: number) => (
+                                        <div key={index} className="flex items-center">
+                                            <div className="ml-4 space-y-1">
+                                                <p className="text-sm font-medium leading-none">{loc.name}</p>
+                                            </div>
+                                            <div className="ml-auto font-medium">{loc.count}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-muted-foreground text-sm py-8 text-center">
+                                    データ計測中...
+                                </div>
+                            )}
+                        </ScrollArea>
+                    </div>
                 </div>
             </div>
         </div>

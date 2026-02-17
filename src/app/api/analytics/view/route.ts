@@ -19,6 +19,23 @@ export async function POST(request: Request) {
         // Track Device
         pipeline.incr(`stats:device:${deviceType}:${today}`);
 
+        // Track Location (Country & City)
+        const country = request.headers.get('x-vercel-ip-country');
+        const city = request.headers.get('x-vercel-ip-city'); // City name (decoded usually needed?)
+        // City headers might be URL encoded visually but Vercel documentation says names.
+        // It's safer to store as is or decodeURIComponent if needed. 
+        // Headers are usually ISO-8859-1, but Vercel sends UTF-8 in headers for city?
+        // Let's store raw for now.
+
+        if (country) {
+            pipeline.zincrby('stats:location:country', 1, country);
+        }
+        if (city && country) {
+            // Store as "City, Country" to avoid ambiguity
+            const location = `${decodeURIComponent(city)}, ${country}`;
+            pipeline.zincrby('stats:location:city', 1, location);
+        }
+
         // Track Referrer (External only)
         if (referer) {
             try {

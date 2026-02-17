@@ -33,14 +33,21 @@ export async function GET() {
         // 3. Get Top Referrers (Total)
         pipeline.zrange('stats:referrers:total', 0, 9, { rev: true, withScores: true });
 
+        // 4. Get Top Locations (Country & City)
+        pipeline.zrange('stats:location:country', 0, 9, { rev: true, withScores: true });
+        pipeline.zrange('stats:location:city', 0, 9, { rev: true, withScores: true });
+
         const results = await pipeline.exec();
 
         const totalViews = (results[0] as number) || 0;
 
         // Calculate daily stats and aggregate devices
         const dailyStatsResults = results.slice(1, 1 + dates.length * 4);
-        // The referrer result is at the end
-        const referrerResults = results[results.length - 1] as (string | number)[];
+
+        // Results indices
+        const referrerResults = results[results.length - 3] as (string | number)[];
+        const countryResults = results[results.length - 2] as (string | number)[];
+        const cityResults = results[results.length - 1] as (string | number)[];
 
         let totalMobile = 0;
         let totalDesktop = 0;
@@ -91,6 +98,27 @@ export async function GET() {
         // Yes, likely useful. But I can't backfill it easily.
         // I'll stick to chart data for now.
 
+        // Format Locations
+        const countries: { name: string; count: number }[] = [];
+        if (Array.isArray(countryResults)) {
+            for (let i = 0; i < countryResults.length; i += 2) {
+                countries.push({
+                    name: countryResults[i] as string,
+                    count: countryResults[i + 1] as number
+                });
+            }
+        }
+
+        const cities: { name: string; count: number }[] = [];
+        if (Array.isArray(cityResults)) {
+            for (let i = 0; i < cityResults.length; i += 2) {
+                cities.push({
+                    name: cityResults[i] as string,
+                    count: cityResults[i + 1] as number
+                });
+            }
+        }
+
         return NextResponse.json({
             overview: {
                 totalViews,
@@ -100,7 +128,11 @@ export async function GET() {
                 { name: 'Mobile', value: totalMobile },
                 { name: 'Desktop', value: totalDesktop }
             ],
-            referrers
+            referrers,
+            locations: {
+                countries,
+                cities
+            }
         });
 
     } catch (error) {
