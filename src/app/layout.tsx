@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner"
 
 import { AudioProvider } from '@/context/AudioContext';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
+import { Suspense } from "react"
 
 export const metadata: Metadata = {
   title: 'Zion Online - Reggae Music Platform',
@@ -29,7 +30,9 @@ export default function RootLayout({
           <div className="relative flex min-h-screen flex-col">
             {/* Desktop Sidebar (Fixed Left) */}
             <aside className="fixed left-0 top-0 bottom-20 z-40 hidden w-64 border-r bg-background md:block">
-              <Sidebar className="h-full" />
+              <Suspense fallback={<div className="w-64 border-r bg-background" />}>
+                <Sidebar className="h-full" />
+              </Suspense>
             </aside>
 
             {/* Main Content Wrapper */}
