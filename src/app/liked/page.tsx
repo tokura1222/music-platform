@@ -2,6 +2,8 @@ import { getAllTracks } from "@/lib/tracks"
 import { LikedSongsList } from "./liked-songs-list"
 import { Separator } from "@/components/ui/separator"
 
+export const dynamic = 'force-dynamic';
+
 export default async function LikedPage() {
     const allTracks = await getAllTracks()
     return (

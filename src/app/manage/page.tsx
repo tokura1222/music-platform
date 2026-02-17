@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GENRES, getGenresByCategory, getGenreBySlug } from '@/lib/genres';
 import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music } from 'lucide-react';
@@ -23,7 +23,7 @@ interface Song {
     [key: string]: any;
 }
 
-export default function ManagePage() {
+function ManageContent() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const [gitConfigured, setGitConfigured] = useState(false);
@@ -640,5 +640,13 @@ export default function ManagePage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ManagePage() {
+    return (
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+            <ManageContent />
+        </Suspense>
     );
 }
