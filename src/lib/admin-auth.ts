@@ -75,6 +75,15 @@ export async function setAdminSessionCookie(): Promise<void> {
         path: '/',
         maxAge: SESSION_EXPIRY,
     });
+
+    // Client-side accessible cookie for UI state
+    cookieStore.set('admin_token', 'true', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: SESSION_EXPIRY,
+    });
 }
 
 /**
@@ -83,6 +92,7 @@ export async function setAdminSessionCookie(): Promise<void> {
 export async function clearAdminSessionCookie(): Promise<void> {
     const cookieStore = await cookies();
     cookieStore.delete(COOKIE_NAME);
+    cookieStore.delete('admin_token');
 }
 
 /**
