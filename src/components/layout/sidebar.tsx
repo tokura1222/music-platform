@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Home, Heart, Music2, Piano, Mic2, LogOut } from "lucide-react"
 import Cookies from 'js-cookie'
 
@@ -15,6 +15,9 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function Sidebar({ className }: SidebarProps) {
     const pathname = usePathname()
+    const searchParams = useSearchParams()
+    const tab = searchParams.get('tab')
+
     const instGenres = getGenresByCategory('instrumentals')
     const vocalGenres = getGenresByCategory('vocal')
 
@@ -32,7 +35,7 @@ export function Sidebar({ className }: SidebarProps) {
                         </div>
                         <div className="space-y-1">
                             <Button
-                                variant={pathname === '/manage' || pathname === '/manage/dashboard' ? 'secondary' : 'ghost'}
+                                variant={pathname === '/manage' && (!tab || tab === 'dashboard') ? 'secondary' : 'ghost'}
                                 className="w-full justify-start font-medium"
                                 asChild
                             >
@@ -42,7 +45,7 @@ export function Sidebar({ className }: SidebarProps) {
                                 </Link>
                             </Button>
                             <Button
-                                variant={pathname === '/manage/songs' ? 'secondary' : 'ghost'}
+                                variant={pathname === '/manage' && tab === 'songs' ? 'secondary' : 'ghost'}
                                 className="w-full justify-start font-medium"
                                 asChild
                             >
