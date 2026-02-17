@@ -40,18 +40,16 @@ export function Sidebar({ className }: SidebarProps) {
                                     Dashboard
                                 </Link>
                             </Button>
-                            {/* 
                             <Button
                                 variant={pathname === '/manage/songs' ? 'secondary' : 'ghost'}
                                 className="w-full justify-start font-medium"
                                 asChild
                             >
-                                <Link href="/manage">
+                                <Link href="/manage?tab=songs">
                                     <Music2 className="mr-2 h-4 w-4" />
-                                    Songs
+                                    Upload Song
                                 </Link>
                             </Button>
-                            */}
                             <Button
                                 variant="ghost"
                                 className="w-full justify-start font-medium text-muted-foreground hover:text-foreground"

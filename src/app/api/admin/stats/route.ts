@@ -25,18 +25,35 @@ export async function GET() {
         dates.forEach(date => {
             pipeline.get(`stats:views:daily:${date}`);
             pipeline.get(`stats:plays:daily:${date}`);
+            // Fetch daily device stats to aggregate
+            pipeline.get(`stats:device:mobile:${date}`);
+            pipeline.get(`stats:device:desktop:${date}`);
         });
+
+        // 3. Get Top Referrers (Total)
+        pipeline.zrange('stats:referrers:total', 0, 9, { rev: true, withScores: true });
 
         const results = await pipeline.exec();
 
         const totalViews = (results[0] as number) || 0;
 
-        // Skip first result (totalViews)
-        const dailyStatsResults = results.slice(1);
+        // Calculate daily stats and aggregate devices
+        const dailyStatsResults = results.slice(1, 1 + dates.length * 4);
+        // The referrer result is at the end
+        const referrerResults = results[results.length - 1] as (string | number)[];
+
+        let totalMobile = 0;
+        let totalDesktop = 0;
 
         const chartData = dates.map((date, index) => {
-            const viewCount = dailyStatsResults[index * 2] as number | null;
-            const playCount = dailyStatsResults[index * 2 + 1] as number | null;
+            const baseIndex = index * 4;
+            const viewCount = dailyStatsResults[baseIndex] as number | null;
+            const playCount = dailyStatsResults[baseIndex + 1] as number | null;
+            const mobileCount = dailyStatsResults[baseIndex + 2] as number | null;
+            const desktopCount = dailyStatsResults[baseIndex + 3] as number | null;
+
+            if (mobileCount) totalMobile += mobileCount;
+            if (desktopCount) totalDesktop += desktopCount;
 
             return {
                 date,
@@ -44,6 +61,18 @@ export async function GET() {
                 plays: playCount || 0,
             };
         });
+
+        // Format Referrers
+        // Redis ZREVRANGE withWITHSCORES returns [member1, score1, member2, score2, ...]
+        const referrers = [];
+        if (Array.isArray(referrerResults)) {
+            for (let i = 0; i < referrerResults.length; i += 2) {
+                referrers.push({
+                    domain: referrerResults[i] as string,
+                    count: referrerResults[i + 1] as number
+                });
+            }
+        }
 
         // Calculate total plays from chart data (approx) or fetch sum? 
         // Actually we don't have a global "total plays" key easily accessible without iterating all songs?
@@ -66,7 +95,12 @@ export async function GET() {
             overview: {
                 totalViews,
             },
-            chartData
+            chartData,
+            devices: [
+                { name: 'Mobile', value: totalMobile },
+                { name: 'Desktop', value: totalDesktop }
+            ],
+            referrers
         });
 
     } catch (error) {

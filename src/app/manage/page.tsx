@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { GENRES, getGenresByCategory, getGenreBySlug } from '@/lib/genres';
 import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music } from 'lucide-react';
 import styles from './manage.module.css';
@@ -49,6 +50,15 @@ export default function ManagePage() {
 
     // Tabs state
     const [activeTab, setActiveTab] = useState<'dashboard' | 'songs'>('dashboard');
+
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get('tab');
+
+    useEffect(() => {
+        if (tabParam === 'songs') {
+            setActiveTab('songs');
+        }
+    }, [tabParam]);
 
     // Check auth on mount & get git config
     useEffect(() => {
