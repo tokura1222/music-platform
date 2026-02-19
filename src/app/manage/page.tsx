@@ -91,6 +91,7 @@ function ManageContent() {
             handleCancelInlineEdit();
         } catch (e) {
             console.error(e);
+            alert('更新に失敗しました: ' + (e instanceof Error ? e.message : String(e)));
             setStatus({ type: 'error', message: '更新に失敗しました' });
         } finally {
             setInlineLoading(false);
