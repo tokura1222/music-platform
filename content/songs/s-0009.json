@@ -4,5 +4,6 @@
   "coverPath": "/music/rockaway.jpg",
   "artist": "toku",
   "category": "vocal",
-  "genreSlug": "vocal-rnb"
+  "genreSlug": "vocal-rnb",
+  "hidden": true
 }
