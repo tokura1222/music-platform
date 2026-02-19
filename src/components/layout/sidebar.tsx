@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Home, Heart, Music2, Piano, Mic2, LogOut } from "lucide-react"
+import { Home, Heart, Music2, Piano, Mic2, LogOut, ChevronDown, ChevronRight } from "lucide-react"
 import Cookies from 'js-cookie'
+import { useState } from "react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -134,7 +135,6 @@ export function Sidebar({ className }: SidebarProps) {
 
                 <Separator className="mx-3" />
 
-                {/* Genre Navigation */}
                 <ScrollArea className="h-[calc(100vh-280px)] px-1">
                     {/* Instrumentals */}
                     <GenreSection
@@ -142,6 +142,7 @@ export function Sidebar({ className }: SidebarProps) {
                         icon={<Piano className="mr-2 h-4 w-4 text-emerald-400" />}
                         genres={instGenres}
                         pathname={pathname}
+                        defaultOpen={true}
                     />
 
                     <Separator className="mx-3 my-3" />
@@ -152,6 +153,7 @@ export function Sidebar({ className }: SidebarProps) {
                         icon={<Mic2 className="mr-2 h-4 w-4 text-amber-400" />}
                         genres={vocalGenres}
                         pathname={pathname}
+                        defaultOpen={true}
                     />
                 </ScrollArea>
             </div>
@@ -164,36 +166,50 @@ function GenreSection({
     icon,
     genres,
     pathname,
+    defaultOpen = false,
 }: {
     title: string
     icon: React.ReactNode
     genres: GenreDefinition[]
     pathname: string
+    defaultOpen?: boolean
 }) {
+    const [isOpen, setIsOpen] = useState(defaultOpen)
+    const ChevronIcon = isOpen ? ChevronDown : ChevronRight
+
     return (
         <div className="px-3 py-2">
-            <h2 className="mb-2 flex items-center px-4 text-sm font-semibold tracking-tight text-muted-foreground uppercase">
-                {icon}
-                {title}
-            </h2>
-            <div className="space-y-0.5">
-                {genres.map((genre) => {
-                    const href = `/genre/${genre.slug}`
-                    const isActive = pathname === href
-                    return (
-                        <Button
-                            key={genre.slug}
-                            variant={isActive ? 'secondary' : 'ghost'}
-                            className="w-full justify-start font-normal text-sm h-8"
-                            asChild
-                        >
-                            <Link href={href}>
-                                {genre.name}
-                            </Link>
-                        </Button>
-                    )
-                })}
-            </div>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="mb-2 flex w-full items-center justify-between px-4 text-sm font-semibold tracking-tight text-muted-foreground uppercase hover:text-foreground transition-colors"
+            >
+                <div className="flex items-center">
+                    {icon}
+                    {title}
+                </div>
+                <ChevronIcon className="h-4 w-4 opacity-50" />
+            </button>
+
+            {isOpen && (
+                <div className="space-y-0.5 animate-in slide-in-from-top-1 fade-in-0 duration-200">
+                    {genres.map((genre) => {
+                        const href = `/genre/${genre.slug}`
+                        const isActive = pathname === href
+                        return (
+                            <Button
+                                key={genre.slug}
+                                variant={isActive ? 'secondary' : 'ghost'}
+                                className="w-full justify-start font-normal text-sm h-8"
+                                asChild
+                            >
+                                <Link href={href}>
+                                    {genre.name}
+                                </Link>
+                            </Button>
+                        )
+                    })}
+                </div>
+            )}
         </div>
     )
 }
