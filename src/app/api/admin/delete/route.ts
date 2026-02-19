@@ -35,9 +35,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Delete the file
-        await fs.unlink(absolutePath);
-
         // Commit and push (deletion)
         const commitMessage = `Web管理画面から楽曲を削除: ${id}`;
         const result = await commitAndPush(commitMessage, [

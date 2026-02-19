@@ -63,9 +63,6 @@ export async function POST(request: NextRequest) {
 
         const updatedJson = JSON.stringify(updatedData, null, 2);
 
-        // Write the updated JSON file
-        await fs.writeFile(absolutePath, updatedJson, 'utf-8');
-
         // Commit and push
         const commitMessage = `Web管理画面から楽曲を更新: ${title} (${id})`;
         const result = await commitAndPush(commitMessage, [

@@ -43,12 +43,6 @@ export async function POST(request: NextRequest) {
         const relativePath = `content/songs/${songId}.json`;
         const absolutePath = path.join(process.cwd(), relativePath);
 
-        // Ensure directory exists
-        await fs.mkdir(path.dirname(absolutePath), { recursive: true });
-
-        // Write the song JSON file
-        await fs.writeFile(absolutePath, songJson, 'utf-8');
-
         // Commit and push
         const commitMessage = `Web管理画面から楽曲を追加: ${title}`;
         const result = await commitAndPush(commitMessage, [
