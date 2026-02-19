@@ -30,7 +30,7 @@ export default function RootLayout({
           <div className="relative flex min-h-screen flex-col">
             {/* Desktop Sidebar (Fixed Left) */}
             <aside className="fixed left-0 top-0 bottom-20 z-40 hidden w-64 border-r bg-background md:block">
-              <Suspense fallback={<div className="w-64 border-r bg-background" />}>
+              <Suspense fallback={<div className="w-64 h-full border-r bg-background" />}>
                 <Sidebar className="h-full" />
               </Suspense>
             </aside>
@@ -43,7 +43,7 @@ export default function RootLayout({
                 <div className="mr-4 md:hidden">
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" aria-label="Toggle Menu">
                         <Menu className="h-6 w-6" />
                         <span className="sr-only">Toggle Menu</span>
                       </Button>

@@ -24,6 +24,7 @@ export default function Header() {
                         type="text"
                         placeholder="Search music..."
                         className={styles.searchInput}
+                        aria-label="Search music"
                     />
                 </div>
             </div>

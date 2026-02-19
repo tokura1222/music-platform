@@ -182,6 +182,8 @@ function GenreSection({
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="mb-2 flex w-full items-center justify-between px-4 text-sm font-semibold tracking-tight text-muted-foreground uppercase hover:text-foreground transition-colors"
+                aria-expanded={isOpen}
+                aria-label={isOpen ? `Collapse ${title}` : `Expand ${title}`}
             >
                 <div className="flex items-center">
                     {icon}

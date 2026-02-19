@@ -72,12 +72,17 @@ export function TrackRow({ track, index }: TrackRowProps) {
     return (
         <div className="group flex items-center gap-4 rounded-md p-2 hover:bg-muted/50 transition-colors">
             {/* Index / Play Button */}
-            <div className="w-8 text-center text-sm text-muted-foreground">
-                <span className={isCurrentPlaying ? "hidden" : "group-hover:hidden"}>{index + 1}</span>
+            <div className="relative w-8 h-8 flex items-center justify-center text-sm text-muted-foreground">
+                <span className={cn("transition-opacity duration-200", (isCurrentPlaying || "group-hover:opacity-0") && isCurrentPlaying ? "opacity-0" : "group-hover:opacity-0")}>
+                    {index + 1}
+                </span>
                 <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 -ml-2 ${isCurrentPlaying ? "inline-flex text-primary" : "hidden group-hover:inline-flex"}`}
+                    className={cn(
+                        "absolute inset-0 h-8 w-8 transition-opacity duration-200",
+                        isCurrentPlaying ? "opacity-100 text-primary" : "opacity-0 group-hover:opacity-100"
+                    )}
                     onClick={() => playTrack(track)}
                 >
                     {isCurrentPlaying ? (
