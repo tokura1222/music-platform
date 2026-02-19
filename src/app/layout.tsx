@@ -67,7 +67,7 @@ export default function RootLayout({
                 {/* Actions */}
                 <div className="ml-auto flex items-center space-x-4">
                   <div className="hidden lg:block text-[10px] text-muted-foreground mr-2 max-w-sm leading-tight text-right">
-                    趣味のサイトになります。サイトを含めて著作物は、ほぼAIを使用して作成してる。SUNOのProプランにて作成していますのでご自由にご使用下さい。
+                    こちらは趣味で運営しているサイトです。サイトをはじめ、掲載している著作物のほとんどはAIを活用して制作しています。楽曲はSUNOのProプランで作成したものですので、どうぞお気軽にご利用ください。
                   </div>
                   <DonateButton />
                 </div>
