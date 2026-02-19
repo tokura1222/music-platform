@@ -4,5 +4,6 @@
   "category": "vocal",
   "url": "/music/One_Big_Family_1771231640360.mp3",
   "coverPath": "/music/One_Big_Family_cover_1771231640414.jpeg",
-  "genreSlug": "vocal-reggae"
+  "genreSlug": "vocal-reggae",
+  "hidden": true
 }
