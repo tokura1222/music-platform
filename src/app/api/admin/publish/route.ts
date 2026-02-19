@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminSession } from '@/lib/admin-auth';
 import { commitAndPush, getCurrentStrategy } from '@/lib/git-strategy';
 import path from 'path';
-import fs from 'fs/promises';
 
 export async function POST(request: NextRequest) {
     // Auth check

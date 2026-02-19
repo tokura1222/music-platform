@@ -29,22 +29,26 @@ export const getAllTracks = async (options: { includeHidden?: boolean } = {}): P
 
         // Use pipeline to fetch all stats in one go
         const pipeline = redis.pipeline()
-        allTracksData.forEach((track: any) => {
+        allTracksData.forEach((track) => {
             pipeline.get(`song:${track.id}:plays`)
             pipeline.get(`song:${track.id}:likes`)
         })
 
         const results = await pipeline.exec()
 
-        const tracks: Track[] = allTracksData.map((track: any, index: number) => {
-            const playCount = results[index * 2] as number | null
-            const likeCount = results[index * 2 + 1] as number | null
+        const tracks: Track[] = allTracksData.map((track, index: number) => {
+            const playCount = results[index * 2] as [error: Error | null, result: unknown] | null
+            const likeCount = results[index * 2 + 1] as [error: Error | null, result: unknown] | null
+
+            // Redis pipeline result is [error, result]
+            const plays = playCount && playCount[1] ? Number(playCount[1]) : 0;
+            const likes = likeCount && likeCount[1] ? Number(likeCount[1]) : 0;
 
             return {
                 ...track,
-                plays: playCount || 0,
-                likes: likeCount || 0,
-            }
+                plays,
+                likes,
+            } as Track
         })
 
         // Filter hidden tracks unless requested
