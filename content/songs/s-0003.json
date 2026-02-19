@@ -4,5 +4,6 @@
   "url": "/music/s-0003.mp3",
   "coverPath": "/music/rockaway.jpg",
   "category": "vocal",
-  "genreSlug": "vocal-hiphop"
+  "genreSlug": "vocal-hiphop",
+  "hidden": true
 }
