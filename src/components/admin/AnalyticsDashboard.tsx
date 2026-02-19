@@ -97,7 +97,11 @@ export function AnalyticsDashboard() {
                             )}
                         </div>
                     </div>
-                    <div className="p-6 pt-4 h-[350px] min-h-[350px] w-full">
+                    <div
+                        className="p-6 pt-4 h-[350px] min-h-[350px] w-full"
+                        role="img"
+                        aria-label="Access Analytics Chart"
+                    >
                         {accessLoading ? (
                             <div className="flex justify-center items-center h-full">
                                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -107,6 +111,7 @@ export function AnalyticsDashboard() {
                                 <BarChart
                                     data={accessData}
                                     margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                                    accessibilityLayer
                                 >
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                                     <XAxis
@@ -133,6 +138,7 @@ export function AnalyticsDashboard() {
                                             if (timeRange === 'hourly') return `${label}時台`;
                                             return label;
                                         }}
+                                        cursor={{ fill: 'transparent' }}
                                     />
                                     <Bar
                                         dataKey="views"
@@ -153,10 +159,14 @@ export function AnalyticsDashboard() {
                         <h3 className="font-semibold leading-none tracking-tight mb-4">
                             デバイス比率
                         </h3>
-                        <div className="h-[200px] w-full flex items-center justify-center">
+                        <div
+                            className="h-[200px] w-full flex items-center justify-center"
+                            role="img"
+                            aria-label="Device Distribution Chart"
+                        >
                             {hasDeviceData ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
+                                    <PieChart accessibilityLayer>
                                         <Pie
                                             data={devices}
                                             cx="50%"
