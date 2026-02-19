@@ -37,12 +37,11 @@ export const getAllTracks = async (options: { includeHidden?: boolean } = {}): P
         const results = await pipeline.exec()
 
         const tracks: Track[] = allTracksData.map((track, index: number) => {
-            const playCount = results[index * 2] as [error: Error | null, result: unknown] | null
-            const likeCount = results[index * 2 + 1] as [error: Error | null, result: unknown] | null
+            const playCount = results[index * 2] as number | null
+            const likeCount = results[index * 2 + 1] as number | null
 
-            // Redis pipeline result is [error, result]
-            const plays = playCount && playCount[1] ? Number(playCount[1]) : 0;
-            const likes = likeCount && likeCount[1] ? Number(likeCount[1]) : 0;
+            const plays = playCount ? Number(playCount) : 0;
+            const likes = likeCount ? Number(likeCount) : 0;
 
             return {
                 ...track,
