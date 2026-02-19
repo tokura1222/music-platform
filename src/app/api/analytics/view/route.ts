@@ -3,7 +3,10 @@ import { redis } from '@/lib/redis';
 
 export async function POST(request: Request) {
     try {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const now = new Date();
+        const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        const currentMonth = today.substring(0, 7); // YYYY-MM
+        const currentHour = now.toISOString().substring(0, 13).replace('T', ':'); // YYYY-MM-DD:HH
         const ua = request.headers.get('user-agent') || '';
         const referer = request.headers.get('referer');
         const host = request.headers.get('host');
@@ -15,6 +18,8 @@ export async function POST(request: Request) {
         const pipeline = redis.pipeline();
         pipeline.incr('stats:views:total');
         pipeline.incr(`stats:views:daily:${today}`);
+        pipeline.incr(`stats:views:monthly:${currentMonth}`);
+        pipeline.incr(`stats:views:hourly:${currentHour}`);
 
         // Track Device
         pipeline.incr(`stats:device:${deviceType}:${today}`);

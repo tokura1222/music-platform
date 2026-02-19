@@ -1,21 +1,30 @@
-"use client";
-
 import { useEffect, useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
-import { Loader2, Smartphone, Monitor } from 'lucide-react';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
+import { Loader2, Calendar, Clock } from 'lucide-react';
 import useSWR from 'swr';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export function AnalyticsDashboard() {
-    const { data, error, isLoading } = useSWR('/api/admin/stats', fetcher, {
-        refreshInterval: 60000 // Refresh every minute
+    const { data: generalData, error: generalError, isLoading: generalLoading } = useSWR('/api/admin/stats', fetcher, {
+        refreshInterval: 60000
     });
 
-    if (isLoading) {
+    const [timeRange, setTimeRange] = useState<'monthly' | 'daily' | 'hourly'>('daily');
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
+    const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+
+    const { data: accessData, error: accessError, isLoading: accessLoading } = useSWR(
+        `/api/admin/stats/access?type=${timeRange}&date=${timeRange === 'monthly' ? '' : (timeRange === 'daily' ? selectedMonth : selectedDate)}`,
+        fetcher
+    );
+
+    if (generalLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -23,7 +32,7 @@ export function AnalyticsDashboard() {
         );
     }
 
-    if (error || data?.error) {
+    if (generalError || generalData?.error) {
         return (
             <div className="flex justify-center items-center h-64 text-red-500">
                 データの読み込みに失敗しました
@@ -31,9 +40,7 @@ export function AnalyticsDashboard() {
         );
     }
 
-    const { overview, chartData, devices, referrers } = data;
-
-    // Check if devices data exists, otherwise use dummy or hide
+    const { overview, chartData, devices, referrers } = generalData;
     const hasDeviceData = devices && devices.some((d: any) => d.value > 0);
 
     return (
@@ -42,7 +49,7 @@ export function AnalyticsDashboard() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
                     <div className="text-sm font-medium leading-none tracking-tight text-muted-foreground">
-                        総閲覧数 (Page Views)
+                        総閲覧数 (Total Page Views)
                     </div>
                     <div className="text-2xl font-bold mt-2">
                         {overview.totalViews.toLocaleString()}
@@ -51,67 +58,89 @@ export function AnalyticsDashboard() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-7">
-                {/* Main Chart */}
+                {/* Main Access Chart */}
                 <div className="col-span-4 rounded-xl border bg-card text-card-foreground shadow">
-                    <div className="p-6 pb-2">
+                    <div className="p-6 pb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <h3 className="font-semibold leading-none tracking-tight">
-                            アクセス & 再生数推移 (過去30日間)
+                            アクセス解析
                         </h3>
+                        <div className="flex items-center gap-2">
+                            <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
+                                <SelectTrigger className="w-[120px]">
+                                    <SelectValue placeholder="期間" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">月間推移</SelectItem>
+                                    <SelectItem value="daily">日別推移</SelectItem>
+                                    <SelectItem value="hourly">時間別</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {timeRange === 'daily' && (
+                                <input
+                                    type="month"
+                                    className="border rounded px-2 py-1 text-sm bg-background"
+                                    value={selectedMonth}
+                                    onChange={(e) => setSelectedMonth(e.target.value)}
+                                />
+                            )}
+
+                            {timeRange === 'hourly' && (
+                                <input
+                                    type="date"
+                                    className="border rounded px-2 py-1 text-sm bg-background"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                />
+                            )}
+                        </div>
                     </div>
-                    <div className="p-6 pt-0 h-[350px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart
-                                data={chartData}
-                                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                            >
-                                <defs>
-                                    <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="colorPlays" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <XAxis
-                                    dataKey="date"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(str) => str.slice(5)}
-                                />
-                                <YAxis
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(number) => `${number}`}
-                                />
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', backgroundColor: 'hsl(var(--background))' }}
-                                />
-                                <Legend />
-                                <Area
-                                    type="monotone"
-                                    dataKey="views"
-                                    name="Page Views"
-                                    stroke="#3b82f6"
-                                    strokeWidth={2}
-                                    fillOpacity={1}
-                                    fill="url(#colorViews)"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="plays"
-                                    name="Song Plays"
-                                    stroke="#10b981"
-                                    strokeWidth={2}
-                                    fillOpacity={1}
-                                    fill="url(#colorPlays)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                    <div className="p-6 pt-4 h-[350px] w-full">
+                        {accessLoading ? (
+                            <div className="flex justify-center items-center h-full">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={accessData}
+                                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                                    <XAxis
+                                        dataKey={timeRange === 'hourly' ? 'time' : 'date'}
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(str) => {
+                                            if (timeRange === 'monthly') return str;
+                                            if (timeRange === 'daily') return str.slice(8); // show only day
+                                            return str;
+                                        }}
+                                    />
+                                    <YAxis
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        allowDecimals={false}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', backgroundColor: 'hsl(var(--background))' }}
+                                        formatter={(value: any) => [value, 'Views']}
+                                        labelFormatter={(label) => {
+                                            if (timeRange === 'hourly') return `${label}時台`;
+                                            return label;
+                                        }}
+                                    />
+                                    <Bar
+                                        dataKey="views"
+                                        name="Page Views"
+                                        fill="#3b82f6"
+                                        radius={[4, 4, 0, 0]}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </div>
 
@@ -183,34 +212,9 @@ export function AnalyticsDashboard() {
                             アクセス地域 (Country)
                         </h3>
                         <ScrollArea className="h-[200px] w-full pr-4">
-                            {data?.locations?.countries && data.locations.countries.length > 0 ? (
+                            {generalData?.locations?.countries && generalData.locations.countries.length > 0 ? (
                                 <div className="space-y-4">
-                                    {data.locations.countries.map((loc: any, index: number) => (
-                                        <div key={index} className="flex items-center">
-                                            <div className="ml-4 space-y-1">
-                                                <p className="text-sm font-medium leading-none">{loc.name}</p>
-                                            </div>
-                                            <div className="ml-auto font-medium">{loc.count}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-muted-foreground text-sm py-8 text-center">
-                                    データ計測中...
-                                </div>
-                            )}
-                        </ScrollArea>
-                    </div>
-
-                    {/* Location List (City) */}
-                    <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-                        <h3 className="font-semibold leading-none tracking-tight mb-4">
-                            アクセス地域 (City)
-                        </h3>
-                        <ScrollArea className="h-[200px] w-full pr-4">
-                            {data?.locations?.cities && data.locations.cities.length > 0 ? (
-                                <div className="space-y-4">
-                                    {data.locations.cities.map((loc: any, index: number) => (
+                                    {generalData.locations.countries.map((loc: any, index: number) => (
                                         <div key={index} className="flex items-center">
                                             <div className="ml-4 space-y-1">
                                                 <p className="text-sm font-medium leading-none">{loc.name}</p>
