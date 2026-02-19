@@ -84,6 +84,7 @@ export function TrackRow({ track, index }: TrackRowProps) {
                         isCurrentPlaying ? "opacity-100 text-primary" : "opacity-0 group-hover:opacity-100"
                     )}
                     onClick={() => playTrack(track)}
+                    aria-label={isCurrentPlaying ? "一時停止" : "再生"}
                 >
                     {isCurrentPlaying ? (
                         <Pause className="h-4 w-4 fill-current" />
@@ -130,13 +131,14 @@ export function TrackRow({ track, index }: TrackRowProps) {
                     size="icon"
                     className={cn("h-8 w-8 hover:text-primary", isLiked ? "text-primary" : "text-muted-foreground")}
                     onClick={handleLike}
+                    aria-label={isLiked ? "いいねを取り消す" : "いいね"}
                 >
                     <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={handleDownload}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={handleDownload} aria-label="ダウンロード">
                     <Download className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" aria-label="その他のオプション">
                     <MoreHorizontal className="h-4 w-4" />
                 </Button>
             </div>

@@ -38,6 +38,7 @@ export function TrackCard({ track, className }: TrackCardProps) {
                         size="icon"
                         className="rounded-full bg-primary text-primary-foreground shadow-xl hover:scale-105 transition-transform"
                         onClick={() => playTrack(track)}
+                        aria-label={isCurrentPlaying ? "一時停止" : "再生"}
                     >
                         {isCurrentPlaying ? (
                             <Pause className="h-6 w-6 fill-current" />
