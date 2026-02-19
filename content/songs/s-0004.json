@@ -4,5 +4,6 @@
   "url": "/music/s-0004.mp3",
   "coverPath": "/music/rockaway.jpg",
   "category": "vocal",
-  "genreSlug": "vocal-rnb"
+  "genreSlug": "vocal-rnb",
+  "hidden": true
 }

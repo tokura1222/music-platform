@@ -4,5 +4,6 @@
   "url": "/music/s-0017.mp3",
   "coverPath": "/music/rockaway.jpg",
   "category": "vocal",
-  "genreSlug": "vocal-pops"
+  "genreSlug": "vocal-pops",
+  "hidden": true
 }
