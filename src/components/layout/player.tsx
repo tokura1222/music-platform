@@ -72,10 +72,10 @@ export function Player({ className }: React.HTMLAttributes<HTMLDivElement>) {
             {/* Center: Controls */}
             <div className="flex w-1/3 flex-col items-center justify-center gap-2">
                 <div className="flex items-center gap-4">
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground" disabled={!currentTrack}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground" disabled={!currentTrack} aria-label="シャッフル">
                         <Shuffle className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-foreground" disabled={!currentTrack}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-foreground" disabled={!currentTrack} aria-label="前の曲へ">
                         <SkipBack className="h-5 w-5 fill-current" />
                     </Button>
                     <Button
@@ -84,6 +84,7 @@ export function Player({ className }: React.HTMLAttributes<HTMLDivElement>) {
                         variant="default"
                         onClick={togglePlay}
                         disabled={!currentTrack}
+                        aria-label={isPlaying ? "一時停止" : "再生"}
                     >
                         {isPlaying ? (
                             <Pause className="h-5 w-5 fill-current ml-0.5" />
@@ -91,10 +92,10 @@ export function Player({ className }: React.HTMLAttributes<HTMLDivElement>) {
                             <Play className="h-5 w-5 fill-current ml-0.5" />
                         )}
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-foreground" disabled={!currentTrack}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-foreground" disabled={!currentTrack} aria-label="次の曲へ">
                         <SkipForward className="h-5 w-5 fill-current" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground" disabled={!currentTrack}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground" disabled={!currentTrack} aria-label="リピート">
                         <Repeat className="h-4 w-4" />
                     </Button>
                 </div>
@@ -107,6 +108,7 @@ export function Player({ className }: React.HTMLAttributes<HTMLDivElement>) {
                         className="w-full hover:cursor-pointer"
                         onValueChange={handleSeek}
                         disabled={!currentTrack}
+                        aria-label="再生位置"
                     />
                     <span>{formatTime(duration)}</span>
                 </div>
@@ -122,6 +124,7 @@ export function Player({ className }: React.HTMLAttributes<HTMLDivElement>) {
                         step={0.01}
                         className="w-full"
                         onValueChange={(vals) => setVolume(vals[0])}
+                        aria-label="音量"
                     />
                 </div>
             </div>

@@ -79,6 +79,7 @@ export function AnalyticsDashboard() {
                             {timeRange === 'daily' && (
                                 <input
                                     type="month"
+                                    aria-label="月を選択"
                                     className="border rounded px-2 py-1 text-sm bg-background"
                                     value={selectedMonth}
                                     onChange={(e) => setSelectedMonth(e.target.value)}
@@ -88,6 +89,7 @@ export function AnalyticsDashboard() {
                             {timeRange === 'hourly' && (
                                 <input
                                     type="date"
+                                    aria-label="日付を選択"
                                     className="border rounded px-2 py-1 text-sm bg-background"
                                     value={selectedDate}
                                     onChange={(e) => setSelectedDate(e.target.value)}
