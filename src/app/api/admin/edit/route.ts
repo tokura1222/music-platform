@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { id, title, artist, genreSlug, category, hidden } = body;
+        const { id, title, artist, genreSlug, category, hidden, url, coverPath } = body;
 
         if (!id || !title || !artist) {
             return NextResponse.json(
@@ -57,9 +57,8 @@ export async function POST(request: NextRequest) {
             category: newCategory || currentData.category || 'vocal',
             ...(genreSlug ? { genreSlug } : {}),
             hidden: typeof hidden === 'boolean' ? hidden : currentData.hidden,
-            // Ensure we don't lose the URL and coverPath
-            url: currentData.url,
-            coverPath: currentData.coverPath,
+            url: url || currentData.url,
+            coverPath: coverPath || currentData.coverPath,
         };
 
         const updatedJson = JSON.stringify(updatedData, null, 2);

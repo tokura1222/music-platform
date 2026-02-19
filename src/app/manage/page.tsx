@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GENRES, getGenresByCategory, getGenreBySlug } from '@/lib/genres';
-import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music } from 'lucide-react';
+import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music, Save, X, Settings2 } from 'lucide-react';
 import styles from './manage.module.css';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 
@@ -42,6 +42,60 @@ function ManageContent() {
     const [coverFile, setCoverFile] = useState<File | null>(null);
     const [publishing, setPublishing] = useState(false);
     const [status, setStatus] = useState<Status | null>(null);
+
+    // Inline Edit State
+    const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
+    const [inlineTitle, setInlineTitle] = useState('');
+    const [inlineArtist, setInlineArtist] = useState('');
+    const [inlineLoading, setInlineLoading] = useState(false);
+
+    const handleStartInlineEdit = (song: Song) => {
+        setInlineEditingId(song.id);
+        setInlineTitle(song.title);
+        setInlineArtist(song.artist);
+    };
+
+    const handleCancelInlineEdit = () => {
+        setInlineEditingId(null);
+        setInlineTitle('');
+        setInlineArtist('');
+    };
+
+    const handleSaveInlineEdit = async (song: Song) => {
+        if (!inlineTitle || !inlineArtist) return;
+        setInlineLoading(true);
+        try {
+            // Optimistic update
+            const originalSongs = [...songs];
+            setSongs(songs.map(s => s.id === song.id ? { ...s, title: inlineTitle, artist: inlineArtist } : s));
+
+            const res = await fetch('/api/admin/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: song.id,
+                    title: inlineTitle,
+                    artist: inlineArtist,
+                    genreSlug: song.genreSlug,
+                    hidden: song.hidden
+                }),
+            });
+
+            if (!res.ok) {
+                // Revert
+                setSongs(originalSongs);
+                throw new Error('Failed to update');
+            }
+
+            setStatus({ type: 'success', message: '楽曲情報を更新しました', details: `Updated: ${inlineTitle}` });
+            handleCancelInlineEdit();
+        } catch (e) {
+            console.error(e);
+            setStatus({ type: 'error', message: '更新に失敗しました' });
+        } finally {
+            setInlineLoading(false);
+        }
+    };
 
     // Songs list state
     const [songs, setSongs] = useState<Song[]>([]);
@@ -600,8 +654,49 @@ function ManageContent() {
                             <tbody>
                                 {filteredSongs.map((song) => (
                                     <tr key={song.id} className={styles.tr}>
-                                        <td className={styles.td}>{song.title}</td>
-                                        <td className={styles.td}>{song.artist}</td>
+                                        <td className={styles.td}>
+                                            {inlineEditingId === song.id ? (
+                                                <input
+                                                    className={styles.input}
+                                                    style={{ padding: '4px 8px', height: 'auto', fontSize: '0.9rem' }}
+                                                    value={inlineTitle}
+                                                    onChange={e => setInlineTitle(e.target.value)}
+                                                    autoFocus
+                                                />
+                                            ) : (
+                                                <div className="flex items-center gap-2 group">
+                                                    <span className="font-medium">{song.title}</span>
+                                                    <button
+                                                        onClick={() => handleStartInlineEdit(song)}
+                                                        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition-opacity"
+                                                        title="名前を変更"
+                                                    >
+                                                        <Edit2 size={12} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className={styles.td}>
+                                            {inlineEditingId === song.id ? (
+                                                <input
+                                                    className={styles.input}
+                                                    style={{ padding: '4px 8px', height: 'auto', fontSize: '0.9rem' }}
+                                                    value={inlineArtist}
+                                                    onChange={e => setInlineArtist(e.target.value)}
+                                                />
+                                            ) : (
+                                                <div className="flex items-center gap-2 group">
+                                                    {song.artist}
+                                                    <button
+                                                        onClick={() => handleStartInlineEdit(song)}
+                                                        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition-opacity"
+                                                        title="アーティスト名を変更"
+                                                    >
+                                                        <Edit2 size={12} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className={styles.td}>{song.genreSlug || '-'}</td>
                                         <td className={styles.td}>
                                             <button
@@ -613,20 +708,33 @@ function ManageContent() {
                                             </button>
                                         </td>
                                         <td className={styles.td}>
-                                            <button
-                                                className={styles.editBtn}
-                                                onClick={() => handleEdit(song)}
-                                                title="編集"
-                                            >
-                                                <Edit2 size={14} />
-                                            </button>
-                                            <button
-                                                className={styles.deleteBtn}
-                                                onClick={() => handleDelete(song)}
-                                                title="削除"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
+                                            {inlineEditingId === song.id ? (
+                                                <div className="flex gap-1">
+                                                    <button onClick={() => handleSaveInlineEdit(song)} disabled={inlineLoading} className={styles.editBtn} title="保存" style={{ color: 'var(--primary)' }}>
+                                                        <Save size={14} />
+                                                    </button>
+                                                    <button onClick={handleCancelInlineEdit} disabled={inlineLoading} className={styles.deleteBtn} title="キャンセル">
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        className={styles.editBtn}
+                                                        onClick={() => handleEdit(song)}
+                                                        title="詳細編集 (ファイル更新など)"
+                                                    >
+                                                        <Settings2 size={14} />
+                                                    </button>
+                                                    <button
+                                                        className={styles.deleteBtn}
+                                                        onClick={() => handleDelete(song)}
+                                                        title="削除"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
