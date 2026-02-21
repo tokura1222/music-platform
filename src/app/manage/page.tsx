@@ -291,44 +291,75 @@ function ManageContent() {
                     throw new Error(publishData.message || '更新に失敗しました');
                 }
             } else {
-                // 一括アップロードロジック
+                // 一括アップロードロジック（Vercelの4.5MB制限を回避するため1曲ずつ送信）
                 if (audioFiles.length === 0) {
                     setStatus({ type: 'error', message: '音声ファイルを選択してください' });
                     return;
                 }
 
-                setStatus({ type: 'info', message: '複数ファイルをアップロードして公開中...' });
-                const batchFormData = new FormData();
-                batchFormData.append('artist', artist);
-
+                setStatus({ type: 'info', message: `0 / ${audioFiles.length} 曲をアップロード中... (複数ファイル処理中)` });
                 const selectedGenre = getGenreBySlug(genreSlug);
-                batchFormData.append('category', selectedGenre?.category || 'vocal');
-                batchFormData.append('genreSlug', genreSlug);
+                const categoryValue = selectedGenre?.category || 'vocal';
 
-                audioFiles.forEach(f => batchFormData.append('audioFiles', f));
-                coverFiles.forEach(f => batchFormData.append('coverFiles', f));
+                let successCount = 0;
+                let errorMessages: string[] = [];
 
-                const publishRes = await fetch('/api/admin/batch-upload', {
-                    method: 'POST',
-                    body: batchFormData,
-                });
+                for (let i = 0; i < audioFiles.length; i++) {
+                    const audioFile = audioFiles[i];
 
-                if (!publishRes.ok) {
-                    const err = await publishRes.json();
-                    throw new Error(err.error || '楽曲の一括公開に失敗しました');
+                    // 対応するカバー画像を探す (拡張子なしのファイル名で一致するか)
+                    const audioBaseName = audioFile.name.substring(0, audioFile.name.lastIndexOf('.')) || audioFile.name;
+                    const matchingCover = coverFiles.find(cover => {
+                        const coverBaseName = cover.name.substring(0, cover.name.lastIndexOf('.')) || cover.name;
+                        return coverBaseName === audioBaseName;
+                    });
+
+                    setStatus({ type: 'info', message: `${i + 1} / ${audioFiles.length} 曲をアップロード中... (${audioFile.name})` });
+
+                    const batchFormData = new FormData();
+                    batchFormData.append('artist', artist);
+                    batchFormData.append('category', categoryValue);
+                    batchFormData.append('genreSlug', genreSlug);
+                    batchFormData.append('audioFiles', audioFile);
+
+                    if (matchingCover) {
+                        batchFormData.append('coverFiles', matchingCover);
+                    }
+
+                    try {
+                        const publishRes = await fetch('/api/admin/batch-upload', {
+                            method: 'POST',
+                            body: batchFormData,
+                        });
+
+                        const publishData = await publishRes.json();
+
+                        if (!publishRes.ok || !publishData.success) {
+                            errorMessages.push(`${audioFile.name}: ${publishData.error || publishData.message || '公開に失敗しました'}`);
+                        } else {
+                            successCount++;
+                        }
+                    } catch (err) {
+                        errorMessages.push(`${audioFile.name}: 通信エラー`);
+                    }
                 }
 
-                const publishData = await publishRes.json();
-                if (publishData.success) {
+                if (successCount === audioFiles.length) {
                     setStatus({
                         type: 'success',
-                        message: `🎉 アップロード成功！ ${publishData.songIds?.length || ''}曲を登録しました。デプロイ後反映されます。`,
-                        details: publishData.message
+                        message: `🎉 アップロード成功！ 全${successCount}曲を登録しました。デプロイ後反映されます。`,
                     });
                     handleCancelEdit();
                     fetchSongs();
+                } else if (successCount > 0) {
+                    setStatus({
+                        type: 'info',
+                        message: `⚠️ 一部完了: ${successCount}曲成功、${audioFiles.length - successCount}曲失敗。デプロイ後反映されます。`,
+                        details: `失敗: ${errorMessages.join(', ')}`
+                    });
+                    fetchSongs();
                 } else {
-                    throw new Error(publishData.message || '公開に失敗しました');
+                    throw new Error(`全曲の公開に失敗しました。\n詳細: ${errorMessages.join('\n')}`);
                 }
             }
 

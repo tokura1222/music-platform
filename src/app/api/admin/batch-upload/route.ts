@@ -3,6 +3,9 @@ import { verifyAdminSession } from '@/lib/admin-auth';
 import { commitAndPush, getCurrentStrategy, CommitFile } from '@/lib/git-strategy';
 import path from 'path';
 
+// Vercel execution limits
+export const maxDuration = 60; // 60 seconds
+
 export async function POST(request: NextRequest) {
     // Auth check
     const isAdmin = await verifyAdminSession();
