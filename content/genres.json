@@ -48,5 +48,10 @@
         "slug": "vocal-rock",
         "name": "Rock",
         "category": "vocal"
+    },
+    {
+        "slug": "inst-edm",
+        "name": "EDM",
+        "category": "instrumentals"
     }
 ]
