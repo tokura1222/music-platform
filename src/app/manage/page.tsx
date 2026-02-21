@@ -38,8 +38,8 @@ function ManageContent() {
     const [title, setTitle] = useState('');
     const [artist, setArtist] = useState('');
     const [genreSlug, setGenreSlug] = useState(GENRES[0].slug);
-    const [audioFile, setAudioFile] = useState<File | null>(null);
-    const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [audioFiles, setAudioFiles] = useState<File[]>([]);
+    const [coverFiles, setCoverFiles] = useState<File[]>([]);
     const [publishing, setPublishing] = useState(false);
     const [status, setStatus] = useState<Status | null>(null);
 
@@ -205,18 +205,9 @@ function ManageContent() {
         setGitConfigured(false);
     };
 
-    // ── Publish ──
     const handlePublish = async (e: FormEvent) => {
         e.preventDefault();
         setStatus(null);
-
-        e.preventDefault();
-        setStatus(null);
-
-        if (!editingSong && !audioFile) {
-            setStatus({ type: 'error', message: '音声ファイルを選択してください' });
-            return;
-        }
 
         if (!gitConfigured) {
             setStatus({
@@ -229,81 +220,116 @@ function ManageContent() {
         try {
             setPublishing(true);
 
-            // 1. Upload audio file via server API (SKIP if editing and no file)
-            let audioUrl = editingSong?.url;
-            if (audioFile) {
-                setStatus({ type: 'info', message: '音声ファイルをアップロード中...' });
-                const audioFormData = new FormData();
-                audioFormData.append('file', audioFile);
-                const audioRes = await fetch('/api/admin/upload', {
-                    method: 'POST',
-                    body: audioFormData,
-                });
-                if (!audioRes.ok) {
-                    const err = await audioRes.json();
-                    throw new Error(err.error || '音声ファイルのアップロードに失敗しました');
+            if (editingSong) {
+                // シングル編集ロジック
+                let audioUrl = editingSong?.url;
+                if (audioFiles.length > 0) {
+                    setStatus({ type: 'info', message: '音声ファイルをアップロード中...' });
+                    const audioFormData = new FormData();
+                    audioFormData.append('file', audioFiles[0]);
+                    const audioRes = await fetch('/api/admin/upload', {
+                        method: 'POST',
+                        body: audioFormData,
+                    });
+                    if (!audioRes.ok) {
+                        const err = await audioRes.json();
+                        throw new Error(err.error || '音声ファイルのアップロードに失敗しました');
+                    }
+                    const audioData = await audioRes.json();
+                    audioUrl = audioData.filePath;
                 }
-                const audioData = await audioRes.json();
-                audioUrl = audioData.filePath;
-            }
 
-            // 2. Upload cover file (optional) via server API
-            let coverPath = editingSong?.coverPath;
-            if (coverFile) {
-                setStatus({ type: 'info', message: 'カバー画像をアップロード中...' });
-                const coverFormData = new FormData();
-                coverFormData.append('file', coverFile);
-                const coverRes = await fetch('/api/admin/upload', {
-                    method: 'POST',
-                    body: coverFormData,
-                });
-                if (!coverRes.ok) {
-                    const err = await coverRes.json();
-                    throw new Error(err.error || 'カバー画像のアップロードに失敗しました');
+                let coverPath = editingSong?.coverPath;
+                if (coverFiles.length > 0) {
+                    setStatus({ type: 'info', message: 'カバー画像をアップロード中...' });
+                    const coverFormData = new FormData();
+                    coverFormData.append('file', coverFiles[0]);
+                    const coverRes = await fetch('/api/admin/upload', {
+                        method: 'POST',
+                        body: coverFormData,
+                    });
+                    if (!coverRes.ok) {
+                        const err = await coverRes.json();
+                        throw new Error(err.error || 'カバー画像のアップロードに失敗しました');
+                    }
+                    const coverData = await coverRes.json();
+                    coverPath = coverData.filePath;
                 }
-                const coverData = await coverRes.json();
-                coverPath = coverData.filePath;
-            }
 
-            // 3. Publish/Update song metadata via server API
-            setStatus({ type: 'info', message: editingSong ? '楽曲情報を更新中...' : '楽曲情報を公開中...' });
-            const selectedGenre = getGenreBySlug(genreSlug);
+                setStatus({ type: 'info', message: '楽曲情報を更新中...' });
+                const selectedGenre = getGenreBySlug(genreSlug);
 
-            const apiEndpoint = editingSong ? '/api/admin/edit' : '/api/admin/publish';
-
-            const publishRes = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: editingSong?.id, // Only for edit
-                    title,
-                    artist,
-                    category: selectedGenre?.category || 'vocal',
-                    genreSlug,
-                    url: audioUrl,
-                    coverPath,
-                }),
-            });
-
-
-            if (!publishRes.ok) {
-                const err = await publishRes.json();
-                throw new Error(err.error || '楽曲の公開に失敗しました');
-            }
-
-            const publishData = await publishRes.json();
-
-            if (publishData.success) {
-                setStatus({
-                    type: 'success',
-                    message: editingSong ? '🎉 更新成功！ デプロイ完了まで数分お待ちください。' : '🎉 アップロード成功！ デプロイ完了まで数分お待ちください。',
-                    details: publishData.message
+                const publishRes = await fetch('/api/admin/edit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: editingSong.id,
+                        title,
+                        artist,
+                        category: selectedGenre?.category || 'vocal',
+                        genreSlug,
+                        url: audioUrl,
+                        coverPath,
+                    }),
                 });
-                // Reset form
-                handleCancelEdit();
-                fetchSongs(); // Refresh list
+
+                if (!publishRes.ok) {
+                    const err = await publishRes.json();
+                    throw new Error(err.error || '楽曲の更新に失敗しました');
+                }
+
+                const publishData = await publishRes.json();
+                if (publishData.success) {
+                    setStatus({
+                        type: 'success',
+                        message: '🎉 更新成功！ デプロイ完了まで数分お待ちください。',
+                        details: publishData.message
+                    });
+                    handleCancelEdit();
+                    fetchSongs();
+                } else {
+                    throw new Error(publishData.message || '更新に失敗しました');
+                }
             } else {
-                throw new Error(publishData.message || '公開に失敗しました');
+                // 一括アップロードロジック
+                if (audioFiles.length === 0) {
+                    setStatus({ type: 'error', message: '音声ファイルを選択してください' });
+                    return;
+                }
+
+                setStatus({ type: 'info', message: '複数ファイルをアップロードして公開中...' });
+                const batchFormData = new FormData();
+                batchFormData.append('artist', artist);
+
+                const selectedGenre = getGenreBySlug(genreSlug);
+                batchFormData.append('category', selectedGenre?.category || 'vocal');
+                batchFormData.append('genreSlug', genreSlug);
+
+                audioFiles.forEach(f => batchFormData.append('audioFiles', f));
+                coverFiles.forEach(f => batchFormData.append('coverFiles', f));
+
+                const publishRes = await fetch('/api/admin/batch-upload', {
+                    method: 'POST',
+                    body: batchFormData,
+                });
+
+                if (!publishRes.ok) {
+                    const err = await publishRes.json();
+                    throw new Error(err.error || '楽曲の一括公開に失敗しました');
+                }
+
+                const publishData = await publishRes.json();
+                if (publishData.success) {
+                    setStatus({
+                        type: 'success',
+                        message: `🎉 アップロード成功！ ${publishData.songIds?.length || ''}曲を登録しました。デプロイ後反映されます。`,
+                        details: publishData.message
+                    });
+                    handleCancelEdit();
+                    fetchSongs();
+                } else {
+                    throw new Error(publishData.message || '公開に失敗しました');
+                }
             }
 
         } catch (err) {
@@ -322,8 +348,8 @@ function ManageContent() {
         setTitle(song.title);
         setArtist(song.artist);
         setGenreSlug(song.genreSlug || GENRES[0].slug);
-        setAudioFile(null);
-        setCoverFile(null);
+        setAudioFiles([]);
+        setCoverFiles([]);
         setStatus(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -333,8 +359,8 @@ function ManageContent() {
         setTitle('');
         setArtist('');
         setGenreSlug(GENRES[0].slug);
-        setAudioFile(null);
-        setCoverFile(null);
+        setAudioFiles([]);
+        setCoverFiles([]);
         setStatus(null);
     };
 
@@ -500,17 +526,19 @@ function ManageContent() {
                 </div>
 
                 <form onSubmit={handlePublish}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>タイトル *</label>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            value={title}
-                            onChange={e => setTitle(e.target.value)}
-                            placeholder="楽曲のタイトル"
-                            required
-                        />
-                    </div>
+                    {editingSong && (
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>タイトル *</label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={title}
+                                onChange={e => setTitle(e.target.value)}
+                                placeholder="楽曲のタイトル"
+                                required={!!editingSong}
+                            />
+                        </div>
+                    )}
 
                     <div className={styles.formGroup}>
                         <label className={styles.label}>アーティスト *</label>
@@ -553,10 +581,12 @@ function ManageContent() {
                                 type="file"
                                 accept=".mp3,.wav,.ogg,.m4a"
                                 className={styles.fileInput}
-                                onChange={e => setAudioFile(e.target.files?.[0] || null)}
+                                onChange={e => setAudioFiles(Array.from(e.target.files || []))}
+                                multiple={!editingSong}
                             />
-                            {audioFile && <p className={styles.fileStatus}>選択中: {audioFile.name}</p>}
+                            {audioFiles.length > 0 && <p className={styles.fileStatus}>選択中: {audioFiles.map(f => f.name).join(', ')}</p>}
                         </div>
+                        {!editingSong && <p className="text-xs text-muted-foreground mt-1">※ファイル名からタイトルが自動設定されます。複数選択対応。</p>}
                     </div>
 
                     <div className={styles.formGroup}>
@@ -566,10 +596,12 @@ function ManageContent() {
                                 type="file"
                                 accept="image/*"
                                 className={styles.fileInput}
-                                onChange={e => setCoverFile(e.target.files?.[0] || null)}
+                                onChange={e => setCoverFiles(Array.from(e.target.files || []))}
+                                multiple={!editingSong}
                             />
-                            {coverFile && <p className={styles.fileStatus}>選択中: {coverFile.name}</p>}
+                            {coverFiles.length > 0 && <p className={styles.fileStatus}>選択中: {coverFiles.map(f => f.name).join(', ')}</p>}
                         </div>
+                        {!editingSong && <p className="text-xs text-muted-foreground mt-1">※音声ファイルと同名（拡張子違い）の画像が自動で紐付けられます。複数選択対応。</p>}
                     </div>
 
                     <hr className={styles.divider} />
