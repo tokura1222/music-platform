@@ -743,8 +743,9 @@ function ManageContent() {
                 <form onSubmit={handlePublish}>
                     {editingSong && (
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>タイトル *</label>
+                            <label className={styles.label} htmlFor="song-title">タイトル *</label>
                             <input
+                                id="song-title"
                                 type="text"
                                 className={styles.input}
                                 value={title}
@@ -756,8 +757,9 @@ function ManageContent() {
                     )}
 
                     <div className={styles.formGroup}>
-                        <label className={styles.label}>アーティスト *</label>
+                        <label className={styles.label} htmlFor="song-artist">アーティスト *</label>
                         <input
+                            id="song-artist"
                             type="text"
                             className={styles.input}
                             value={artist}
@@ -768,8 +770,9 @@ function ManageContent() {
                     </div>
 
                     <div className={styles.formGroup}>
-                        <label className={styles.label}>ジャンル *</label>
+                        <label className={styles.label} htmlFor="song-genre">ジャンル *</label>
                         <select
+                            id="song-genre"
                             className={styles.select}
                             value={genreSlug}
                             onChange={e => setGenreSlug(e.target.value)}
@@ -790,9 +793,10 @@ function ManageContent() {
                     <hr className={styles.divider} />
 
                     <div className={styles.formGroup}>
-                        <label className={styles.label}>音声ファイル {editingSong ? '(変更する場合のみ)' : '*'}</label>
+                        <label className={styles.label} htmlFor="song-audio">音声ファイル {editingSong ? '(変更する場合のみ)' : '*'}</label>
                         <div className={styles.fileInputWrapper}>
                             <input
+                                id="song-audio"
                                 type="file"
                                 accept=".mp3,.wav,.ogg,.m4a"
                                 className={styles.fileInput}
@@ -805,9 +809,10 @@ function ManageContent() {
                     </div>
 
                     <div className={styles.formGroup}>
-                        <label className={styles.label}>カバー画像（任意）</label>
+                        <label className={styles.label} htmlFor="song-cover">カバー画像（任意）</label>
                         <div className={styles.fileInputWrapper}>
                             <input
+                                id="song-cover"
                                 type="file"
                                 accept="image/*"
                                 className={styles.fileInput}
@@ -873,6 +878,7 @@ function ManageContent() {
                             className={styles.filterSelect}
                             value={genreFilter}
                             onChange={(e) => setGenreFilter(e.target.value)}
+                            aria-label="ジャンルで絞り込む"
                         >
                             <option value="all">全てのジャンル</option>
                             <optgroup label="Instrumentals">
