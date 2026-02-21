@@ -6,24 +6,12 @@ export interface GenreDefinition {
     category: GenreCategory
 }
 
+import genresData from '../../content/genres.json';
+
 /**
  * Master list of all genres, grouped by category.
  */
-export const GENRES: GenreDefinition[] = [
-    // ── Instrumentals ──
-    { slug: 'inst-piano', name: 'Piano Solo', category: 'instrumentals' },
-    { slug: 'inst-lofi', name: 'Lo-Fi / Chill', category: 'instrumentals' },
-    { slug: 'inst-acoustic', name: 'Acoustic', category: 'instrumentals' },
-    { slug: 'inst-cinematic', name: 'Cinematic', category: 'instrumentals' },
-    { slug: 'inst-electronic', name: 'Electronic', category: 'instrumentals' },
-
-    // ── Vocal Songs ──
-    { slug: 'vocal-reggae', name: 'Reggae / Roots', category: 'vocal' },
-    { slug: 'vocal-pops', name: 'Pops', category: 'vocal' },
-    { slug: 'vocal-hiphop', name: 'Hip-Hop', category: 'vocal' },
-    { slug: 'vocal-rnb', name: 'R&B / Soul', category: 'vocal' },
-    { slug: 'vocal-rock', name: 'Rock', category: 'vocal' },
-]
+export const GENRES: GenreDefinition[] = genresData as GenreDefinition[];
 
 /**
  * Get genre definition by slug.

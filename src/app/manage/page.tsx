@@ -2,8 +2,8 @@
 
 import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { GENRES, getGenresByCategory, getGenreBySlug } from '@/lib/genres';
-import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music, Save, X, Settings2 } from 'lucide-react';
+import { GENRES, GenreDefinition, getGenresByCategory, getGenreBySlug } from '@/lib/genres';
+import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music, Save, X, Settings2, FolderTree } from 'lucide-react';
 import styles from './manage.module.css';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 
@@ -104,7 +104,14 @@ function ManageContent() {
     const [genreFilter, setGenreFilter] = useState('all');
 
     // Tabs state
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'songs'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'songs' | 'genres'>('dashboard');
+
+    // Genres State
+    const [genresData, setGenresData] = useState<GenreDefinition[]>([]);
+    const [newGenreName, setNewGenreName] = useState('');
+    const [newGenreSlug, setNewGenreSlug] = useState('');
+    const [newGenreCategory, setNewGenreCategory] = useState<'instrumentals' | 'vocal'>('vocal');
+    const [isSavingGenres, setIsSavingGenres] = useState(false);
 
     const searchParams = useSearchParams();
     const tabParam = searchParams.get('tab');
@@ -112,6 +119,8 @@ function ManageContent() {
     useEffect(() => {
         if (tabParam === 'songs') {
             setActiveTab('songs');
+        } else if (tabParam === 'genres') {
+            setActiveTab('genres');
         } else {
             setActiveTab('dashboard');
         }
@@ -166,6 +175,7 @@ function ManageContent() {
     useEffect(() => {
         if (isAuthenticated) {
             fetchSongs();
+            setGenresData(GENRES); // Load initial GENRES from imported data
         }
     }, [isAuthenticated]);
 
@@ -452,6 +462,57 @@ function ManageContent() {
         }
     };
 
+    // ── Genre Management Hooks ──
+    const handleSaveGenres = async (newGenresArray: GenreDefinition[]) => {
+        setIsSavingGenres(true);
+        setStatus({ type: 'info', message: 'ジャンルを更新中...' });
+        try {
+            const res = await fetch('/api/admin/genres', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ genres: newGenresArray }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setGenresData(newGenresArray); // Update local state
+                setStatus({ type: 'success', message: '🎉 ジャンルを更新しました。デプロイ後反映されます。' });
+            } else {
+                throw new Error(data.error || '更新に失敗しました');
+            }
+        } catch (error) {
+            console.error(error);
+            setStatus({ type: 'error', message: 'ジャンルの更新に失敗しました' });
+        } finally {
+            setIsSavingGenres(false);
+        }
+    };
+
+    const handleAddGenre = (e: FormEvent) => {
+        e.preventDefault();
+        if (!newGenreName || !newGenreSlug) return;
+
+        // Validation for uniqueness
+        if (genresData.some(g => g.slug === newGenreSlug)) {
+            alert('このスラッグは既に使用されています。');
+            return;
+        }
+
+        const newGenre = { slug: newGenreSlug, name: newGenreName, category: newGenreCategory };
+        const updatedGenres = [...genresData, newGenre];
+        handleSaveGenres(updatedGenres);
+
+        setNewGenreName('');
+        setNewGenreSlug('');
+    };
+
+    const handleDeleteGenre = (slug: string, name: string) => {
+        if (!confirm(`本当に「${name}」をジャンルから削除しますか？\n※既にこのジャンルが設定されている楽曲がある場合は注意してください。`)) {
+            return;
+        }
+        const updatedGenres = genresData.filter(g => g.slug !== slug);
+        handleSaveGenres(updatedGenres);
+    };
+
     // Filtered songs
     const filteredSongs = songs.filter(song => {
         if (genreFilter === 'all') return true;
@@ -540,12 +601,135 @@ function ManageContent() {
                     <Music className="inline-block w-4 h-4 mr-2" />
                     Songs
                 </button>
+                <button
+                    className={`${styles.tab} ${activeTab === 'genres' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('genres')}
+                >
+                    <FolderTree className="inline-block w-4 h-4 mr-2" />
+                    Genres
+                </button>
             </div>
 
             {/* Dashboard Tab */}
             {activeTab === 'dashboard' && (
                 <AnalyticsDashboard />
             )}
+
+            {/* Genres Tab */}
+            <div style={{ display: activeTab === 'genres' ? 'block' : 'none' }}>
+                <div className="mb-6">
+                    <h2 className="text-xl font-bold mb-2">ジャンル管理</h2>
+                    <p className="text-muted-foreground text-sm mb-4">
+                        新しいジャンルを追加したり、不要なジャンルを削除します。変更はGitへコミットされ、デプロイ後に反映されます。
+                    </p>
+                </div>
+
+                {status && activeTab === 'genres' && (
+                    <div className={`mb-6 ${status.type === 'success' ? styles.statusSuccess : status.type === 'error' ? styles.statusError : styles.statusInfo}`}>
+                        <div>{status.message}</div>
+                        {status.details && <div style={{ marginTop: '0.4rem', opacity: 0.8, fontSize: '0.78rem' }}>{status.details}</div>}
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Add Genre Form */}
+                    <div className="lg:col-span-1">
+                        <form onSubmit={handleAddGenre} className="bg-card border border-border rounded-lg p-5">
+                            <h3 className="font-semibold mb-4 text-card-foreground">新しいジャンルを追加</h3>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>表示名 (Name) *</label>
+                                <input
+                                    type="text"
+                                    className={`${styles.input} text-sm`}
+                                    value={newGenreName}
+                                    onChange={e => setNewGenreName(e.target.value)}
+                                    placeholder="例: J-Pop"
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>スラッグ (URL用) *</label>
+                                <input
+                                    type="text"
+                                    className={`${styles.input} text-sm`}
+                                    value={newGenreSlug}
+                                    onChange={e => setNewGenreSlug(e.target.value)}
+                                    placeholder="例: vocal-jpop"
+                                    pattern="^[a-zA-Z0-9\-]+$"
+                                    title="半角英数字とハイフンのみ"
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>カテゴリ *</label>
+                                <select
+                                    className={`${styles.select} text-sm`}
+                                    value={newGenreCategory}
+                                    onChange={e => setNewGenreCategory(e.target.value as any)}
+                                >
+                                    <option value="vocal">Vocal Songs</option>
+                                    <option value="instrumentals">Instrumentals</option>
+                                </select>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={`${styles.submitBtn} text-sm mt-4 w-full`}
+                                disabled={isSavingGenres}
+                            >
+                                {isSavingGenres ? '保存中...' : 'ジャンルを追加してPush'}
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Genres List View */}
+                    <div className="lg:col-span-2">
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr className={styles.tr}>
+                                        <th className={styles.th}>Name</th>
+                                        <th className={styles.th}>Slug</th>
+                                        <th className={styles.th}>Category</th>
+                                        <th className={styles.th}>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {genresData.map((genre) => (
+                                        <tr key={genre.slug} className={styles.tr}>
+                                            <td className={styles.td}><span className="font-medium">{genre.name}</span></td>
+                                            <td className={styles.td}><span className="text-muted-foreground text-sm">{genre.slug}</span></td>
+                                            <td className={styles.td}>
+                                                <span className={`px-2 py-1 text-xs rounded-full ${genre.category === 'vocal' ? 'bg-primary/20 text-primary' : 'bg-secondary text-secondary-foreground'}`}>
+                                                    {genre.category === 'vocal' ? 'Vocal' : 'Instrumental'}
+                                                </span>
+                                            </td>
+                                            <td className={styles.td}>
+                                                <button
+                                                    className={styles.deleteBtn}
+                                                    onClick={() => handleDeleteGenre(genre.slug, genre.name)}
+                                                    title="削除"
+                                                    disabled={isSavingGenres}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {genresData.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="text-center p-8 text-muted-foreground">ジャンルが見つかりません</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Songs Tab */}
             <div style={{ display: activeTab === 'songs' ? 'block' : 'none' }}>
@@ -660,7 +844,7 @@ function ManageContent() {
                         </button>
                     )}
 
-                    {status && (
+                    {status && activeTab === 'songs' && (
                         <div
                             className={
                                 status.type === 'success'
