@@ -8,8 +8,8 @@ import { getAllTracks } from "@/lib/tracks"
 export const dynamic = 'force-dynamic'
 
 export default async function FreePlanExclusivePage() {
-    // Fetch all tracks
-    const allTracks = await getAllTracks()
+    // Fetch all tracks including free plan tracks
+    const allTracks = await getAllTracks({ includeFreePlan: true })
 
     // Filter only tracks marked as isFreePlan (SUNO Free Plan)
     const tracks = allTracks.filter(track => track.isFreePlan)

@@ -5,7 +5,7 @@ import { Track } from '@/types'
 
 const SONGS_DIR = path.join(process.cwd(), 'content/songs')
 
-export const getAllTracks = async (options: { includeHidden?: boolean } = {}): Promise<Track[]> => {
+export const getAllTracks = async (options: { includeHidden?: boolean, includeFreePlan?: boolean } = {}): Promise<Track[]> => {
     try {
         if (!fs.existsSync(SONGS_DIR)) {
             return []
@@ -51,9 +51,14 @@ export const getAllTracks = async (options: { includeHidden?: boolean } = {}): P
         })
 
         // Filter hidden tracks unless requested
-        const visibleTracks = options.includeHidden
+        let visibleTracks = options.includeHidden
             ? tracks
             : tracks.filter(track => !track.hidden);
+
+        // Filter free plan tracks unless requested
+        visibleTracks = options.includeFreePlan
+            ? visibleTracks
+            : visibleTracks.filter(track => !track.isFreePlan);
 
         return visibleTracks.sort((a, b) => b.plays - a.plays)
     } catch (error) {
