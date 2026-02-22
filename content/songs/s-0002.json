@@ -5,5 +5,6 @@
   "coverPath": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop",
   "category": "vocal",
   "genreSlug": "vocal-pops",
-  "hidden": false
+  "hidden": true,
+  "isFreePlan": true
 }
