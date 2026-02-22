@@ -16,10 +16,11 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
 
-        // Extract metadata
         const artist = formData.get('artist') as string;
         const category = formData.get('category') as string;
         const genreSlug = formData.get('genreSlug') as string;
+        const isFreePlanStr = formData.get('isFreePlan') as string;
+        const isFreePlan = isFreePlanStr === 'true';
 
         if (!artist) {
             return NextResponse.json({ error: 'アーティスト名は必須です' }, { status: 400 });
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
                 artist,
                 category: category || 'vocal',
                 ...(genreSlug && { genreSlug }),
+                ...(isFreePlan ? { isFreePlan } : {}),
                 url: audioUrl,
                 ...(coverPath && { coverPath }),
             };

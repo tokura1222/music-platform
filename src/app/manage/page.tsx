@@ -40,6 +40,7 @@ function ManageContent() {
     const [genreSlug, setGenreSlug] = useState(GENRES[0].slug);
     const [audioFiles, setAudioFiles] = useState<File[]>([]);
     const [coverFiles, setCoverFiles] = useState<File[]>([]);
+    const [isFreePlan, setIsFreePlan] = useState(false);
     const [publishing, setPublishing] = useState(false);
     const [status, setStatus] = useState<Status | null>(null);
 
@@ -278,6 +279,7 @@ function ManageContent() {
                         artist,
                         category: selectedGenre?.category || 'vocal',
                         genreSlug,
+                        isFreePlan,
                         url: audioUrl,
                         coverPath,
                     }),
@@ -330,6 +332,7 @@ function ManageContent() {
                     batchFormData.append('artist', artist);
                     batchFormData.append('category', categoryValue);
                     batchFormData.append('genreSlug', genreSlug);
+                    batchFormData.append('isFreePlan', isFreePlan.toString());
                     batchFormData.append('audioFiles', audioFile);
 
                     if (matchingCover) {
@@ -389,6 +392,7 @@ function ManageContent() {
         setTitle(song.title);
         setArtist(song.artist);
         setGenreSlug(song.genreSlug || GENRES[0].slug);
+        setIsFreePlan(!!song.isFreePlan);
         setAudioFiles([]);
         setCoverFiles([]);
         setStatus(null);
@@ -400,6 +404,7 @@ function ManageContent() {
         setTitle('');
         setArtist('');
         setGenreSlug(GENRES[0].slug);
+        setIsFreePlan(false);
         setAudioFiles([]);
         setCoverFiles([]);
         setStatus(null);
@@ -788,6 +793,22 @@ function ManageContent() {
                                 ))}
                             </optgroup>
                         </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label} htmlFor="song-isfreeplan">SUNO 無料プラン</label>
+                        <div className="flex items-center space-x-2 mt-1">
+                            <input
+                                id="song-isfreeplan"
+                                type="checkbox"
+                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                checked={isFreePlan}
+                                onChange={e => setIsFreePlan(e.target.checked)}
+                            />
+                            <label htmlFor="song-isfreeplan" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                この楽曲はSUNOの無料プランで作成されたものとしてマークする
+                            </label>
+                        </div>
                     </div>
 
                     <hr className={styles.divider} />
