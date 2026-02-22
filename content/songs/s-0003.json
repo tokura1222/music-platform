@@ -5,6 +5,5 @@
   "coverPath": "/music/rockaway.jpg",
   "category": "vocal",
   "genreSlug": "vocal-hiphop",
-  "hidden": true,
-  "isFreePlan": true
+  "hidden": false
 }
