@@ -7,6 +7,7 @@ export interface Track {
     category?: 'instrumentals' | 'vocal' | string
     genreSlug?: string
     hidden?: boolean
+    isFreePlan?: boolean
     // Stats
     plays: number
     likes: number

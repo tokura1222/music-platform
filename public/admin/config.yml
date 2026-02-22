@@ -24,6 +24,11 @@ collections:
       - {label: "Artist", name: "artist", widget: "string"}
       - {label: "Audio File", name: "url", widget: "file"}
       - {label: "Cover Image", name: "coverPath", widget: "image", required: false}
+      - label: "SUNO Free Plan"
+        name: "isFreePlan"
+        widget: "boolean"
+        default: false
+        required: false
       - label: "Category"
         name: "category"
         widget: "select"
