@@ -5,5 +5,6 @@
   "artist": "toku",
   "category": "vocal",
   "genreSlug": "vocal-hiphop",
-  "hidden": false
+  "hidden": false,
+  "isFreePlan": true
 }
