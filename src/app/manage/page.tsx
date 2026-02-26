@@ -6,6 +6,7 @@ import { GENRES, GenreDefinition, getGenresByCategory, getGenreBySlug } from '@/
 import { Trash2, Edit2, Eye, EyeOff, LayoutDashboard, Music, Save, X, Settings2, FolderTree } from 'lucide-react';
 import styles from './manage.module.css';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
+import { AlertModal } from '@/components/ui/alert-modal';
 
 type Status = {
     type: 'success' | 'error' | 'info';
@@ -134,6 +135,12 @@ function ManageContent() {
     const [newGenreSlug, setNewGenreSlug] = useState('');
     const [newGenreCategory, setNewGenreCategory] = useState<'instrumentals' | 'vocal'>('vocal');
     const [isSavingGenres, setIsSavingGenres] = useState(false);
+
+    // Delete Modals State
+    const [songToDelete, setSongToDelete] = useState<Song | null>(null);
+    const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
+    const [genreToDelete, setGenreToDelete] = useState<{ slug: string, name: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const searchParams = useSearchParams();
     const tabParam = searchParams.get('tab');
@@ -474,32 +481,38 @@ function ManageContent() {
         }
     };
 
-    const handleDelete = async (song: Song) => {
-        if (!confirm(`本当に「${song.title}」を削除しますか？\nこの操作は取り消せません。`)) {
-            return;
-        }
+    const handleDelete = (song: Song) => {
+        setSongToDelete(song);
+    };
+
+    const confirmSongDelete = async () => {
+        if (!songToDelete) return;
 
         try {
+            setIsDeleting(true);
             setStatus({ type: 'info', message: '楽曲を削除中...' });
 
             const res = await fetch('/api/admin/delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: song.id }),
+                body: JSON.stringify({ id: songToDelete.id }),
             });
 
             const data = await res.json();
 
             if (res.ok && data.success) {
                 setStatus({ type: 'success', message: '楽曲を削除しました' });
-                setSongs(songs.filter(s => s.id !== song.id));
-                if (editingSong?.id === song.id) handleCancelEdit();
+                setSongs(songs.filter(s => s.id !== songToDelete.id));
+                if (editingSong?.id === songToDelete.id) handleCancelEdit();
             } else {
                 throw new Error(data.message || '削除に失敗しました');
             }
         } catch (error) {
             console.error(error);
             setStatus({ type: 'error', message: '削除に失敗しました' });
+        } finally {
+            setIsDeleting(false);
+            setSongToDelete(null);
         }
     };
 
@@ -547,11 +560,14 @@ function ManageContent() {
     };
 
     const handleDeleteGenre = (slug: string, name: string) => {
-        if (!confirm(`本当に「${name}」をジャンルから削除しますか？\n※既にこのジャンルが設定されている楽曲がある場合は注意してください。`)) {
-            return;
-        }
-        const updatedGenres = genresData.filter(g => g.slug !== slug);
+        setGenreToDelete({ slug, name });
+    };
+
+    const confirmGenreDelete = () => {
+        if (!genreToDelete) return;
+        const updatedGenres = genresData.filter(g => g.slug !== genreToDelete.slug);
         handleSaveGenres(updatedGenres);
+        setGenreToDelete(null);
     };
 
     // Filtered songs
@@ -655,32 +671,38 @@ function ManageContent() {
         }
     };
 
-    const handleDeleteMovie = async (movie: Movie) => {
-        if (!confirm(`本当に「${movie.title}」を削除しますか？\nこの操作は取り消せません。`)) {
-            return;
-        }
+    const handleDeleteMovie = (movie: Movie) => {
+        setMovieToDelete(movie);
+    };
+
+    const confirmMovieDelete = async () => {
+        if (!movieToDelete) return;
 
         try {
+            setIsDeleting(true);
             setStatus({ type: 'info', message: '動画を削除中...' });
 
             const res = await fetch('/api/admin/movies/delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: movie.id }),
+                body: JSON.stringify({ id: movieToDelete.id }),
             });
 
             const data = await res.json();
 
             if (res.ok && data.success) {
                 setStatus({ type: 'success', message: '動画を削除しました' });
-                setMovies(movies.filter(m => m.id !== movie.id));
-                if (editingMovie?.id === movie.id) handleCancelMovieEdit();
+                setMovies(movies.filter(m => m.id !== movieToDelete.id));
+                if (editingMovie?.id === movieToDelete.id) handleCancelMovieEdit();
             } else {
                 throw new Error(data.error || '削除に失敗しました');
             }
         } catch (error) {
             console.error(error);
             setStatus({ type: 'error', message: '削除に失敗しました' });
+        } finally {
+            setIsDeleting(false);
+            setMovieToDelete(null);
         }
     };
 
@@ -1352,6 +1374,31 @@ function ManageContent() {
                     </div>
                 </div>
             </div>
+
+            {/* Modals */}
+            <AlertModal
+                isOpen={!!songToDelete}
+                onClose={() => setSongToDelete(null)}
+                onConfirm={confirmSongDelete}
+                loading={isDeleting}
+                title="楽曲の削除"
+                description={`本当に「${songToDelete?.title}」を削除しますか？この操作は取り消せません。`}
+            />
+            <AlertModal
+                isOpen={!!movieToDelete}
+                onClose={() => setMovieToDelete(null)}
+                onConfirm={confirmMovieDelete}
+                loading={isDeleting}
+                title="動画の削除"
+                description={`本当に「${movieToDelete?.title}」を削除しますか？この操作は取り消せません。`}
+            />
+            <AlertModal
+                isOpen={!!genreToDelete}
+                onClose={() => setGenreToDelete(null)}
+                onConfirm={confirmGenreDelete}
+                title="ジャンルの削除"
+                description={`本当に「${genreToDelete?.name}」をジャンルから削除しますか？※既にこのジャンルが設定されている楽曲がある場合は注意してください。`}
+            />
         </div>
     );
 }

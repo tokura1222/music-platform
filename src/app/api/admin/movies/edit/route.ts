@@ -23,15 +23,14 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields: id, title, artist, youtubeId' }, { status: 400 });
         }
 
-        // --- 1. JSON ファイルの更新 ---
-        await fs.mkdir(MOVIES_DIR, { recursive: true });
-
+        // --- 1. 既存データの取得 ---
         const fileName = `${data.id}.json`;
-        const filePath = path.join(MOVIES_DIR, fileName);
+        const relativeFilePath = `content/movies/${fileName}`;
+        const absoluteFilePath = path.join(process.cwd(), relativeFilePath);
 
         let existingData = {};
         try {
-            const fileContents = await fs.readFile(filePath, 'utf8');
+            const fileContents = await fs.readFile(absoluteFilePath, 'utf8');
             existingData = JSON.parse(fileContents);
         } catch (error) {
             // 新規作成の場合は無視
@@ -42,33 +41,38 @@ export async function POST(request: Request) {
             title: data.title,
             artist: data.artist,
             youtubeId: data.youtubeId,
-            thumbnailUrl: data.thumbnailUrl || undefined, // undefinedはJSON化で消える
+            thumbnailUrl: data.thumbnailUrl || undefined,
             description: data.description || undefined,
             hidden: data.hidden,
         };
 
-        await fs.writeFile(filePath, JSON.stringify(mergedData, null, 2), 'utf8');
+        const updatedJson = JSON.stringify(mergedData, null, 2);
 
-        // --- 2. Git へのコミット & プッシュ (ローカルのみ) ---
+        // --- 2. 保存 & Git へのコミット & プッシュ ---
         const strategy = getCurrentStrategy();
-        if (strategy === 'local') {
-            try {
-                // git add のための相対パス
-                const relativeFilePath = path.relative(process.cwd(), filePath);
-                // Windows パスのバックスラッシュをスラッシュに変換（Git用）
-                const posixPath = relativeFilePath.split(path.sep).join(path.posix.sep);
 
-                await commitAndPush(
-                    `Update movie data: ${data.id}`,
-                    [{
-                        absolutePath: filePath,
-                        relativePath: posixPath,
-                    }]
-                );
-            } catch (gitError) {
-                console.warn('Git commit/push failed, but file was saved locally:', gitError);
-                // Gitの失敗は致命的にしない（ローカルで作業している場合など）
-            }
+        // ローカル環境の場合は物理ファイルも更新する
+        if (strategy === 'local') {
+            await fs.mkdir(path.dirname(absoluteFilePath), { recursive: true });
+            await fs.writeFile(absoluteFilePath, updatedJson, 'utf8');
+        }
+
+        // Posix path format for Git
+        const posixPath = relativeFilePath.split(path.sep).join(path.posix.sep);
+
+        const result = await commitAndPush(
+            `Update movie data: ${data.id}`,
+            [{
+                absolutePath: absoluteFilePath,
+                relativePath: posixPath,
+                content: updatedJson,
+            }]
+        );
+
+        if (!result.success && strategy === 'github-api') {
+            throw new Error(result.message || 'GitHubへの保存に失敗しました');
+        } else if (!result.success) {
+            console.warn('Git commit/push failed, but file was saved locally:', result.message);
         }
 
         return NextResponse.json({

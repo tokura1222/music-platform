@@ -22,37 +22,40 @@ export async function POST(request: Request) {
         }
 
         const fileName = `${id}.json`;
-        const filePath = path.join(MOVIES_DIR, fileName);
+        const relativeFilePath = `content/movies/${fileName}`;
+        const absoluteFilePath = path.join(process.cwd(), relativeFilePath);
 
-        // ファイルの存在確認
+        const strategy = getCurrentStrategy();
+
+        // 1. ローカルのファイルアクセス確認と削除
         try {
-            await fs.access(filePath);
+            await fs.access(absoluteFilePath);
+            await fs.unlink(absoluteFilePath);
         } catch (error) {
-            return NextResponse.json({ error: 'Movie not found' }, { status: 404 });
+            // ローカル環境の場合はファイルが見つからなければエラー
+            if (strategy === 'local') {
+                return NextResponse.json({ error: 'Movie not found' }, { status: 404 });
+            }
+            // GitHub API (Vercel) の場合はローカルにファイルがなくても
+            // GitHubリポジトリには存在する可能性があるためそのまま進める
         }
 
-        // ファイル削除
-        await fs.unlink(filePath);
+        // --- 2. Git へのコミット & プッシュ ---
+        const posixPath = relativeFilePath.split(path.sep).join(path.posix.sep);
 
-        // --- Git へのコミット & プッシュ (ローカルのみ) ---
-        const strategy = getCurrentStrategy();
-        if (strategy === 'local') {
-            try {
-                // git rm のための相対パス (posix形式)
-                const relativeFilePath = path.relative(process.cwd(), filePath);
-                const posixPath = relativeFilePath.split(path.sep).join(path.posix.sep);
+        const result = await commitAndPush(
+            `Delete movie data: ${id}`,
+            [{
+                absolutePath: absoluteFilePath,
+                relativePath: posixPath,
+                deleted: true
+            }]
+        );
 
-                await commitAndPush(
-                    `Delete movie data: ${id}`,
-                    [{
-                        absolutePath: filePath,
-                        relativePath: posixPath,
-                        deleted: true
-                    }]
-                );
-            } catch (gitError) {
-                console.warn('Git commit/push failed for deletion:', gitError);
-            }
+        if (!result.success && strategy === 'github-api') {
+            throw new Error(result.message || 'GitHubからの削除に失敗しました');
+        } else if (!result.success) {
+            console.warn('Git commit/push failed for deletion:', result.message);
         }
 
         return NextResponse.json({ success: true, message: 'Movie deleted successfully' });
