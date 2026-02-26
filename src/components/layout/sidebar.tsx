@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Home, Heart, Music2, Piano, Mic2, LogOut, ChevronDown, ChevronRight } from "lucide-react"
+import { Home, Heart, Music2, Piano, Mic2, LogOut, ChevronDown, ChevronRight, Video } from "lucide-react"
 import Cookies from 'js-cookie'
 import { useState } from "react"
 
@@ -21,6 +21,7 @@ export function Sidebar({ className }: SidebarProps) {
 
     const instGenres = getGenresByCategory('instrumentals')
     const vocalGenres = getGenresByCategory('vocal')
+    const movieGenres = getGenresByCategory('movie')
 
     // Admin Sidebar
     if (pathname.startsWith('/manage')) {
@@ -165,6 +166,21 @@ export function Sidebar({ className }: SidebarProps) {
                         pathname={pathname}
                         defaultOpen={true}
                     />
+
+                    {movieGenres.length > 0 && (
+                        <>
+                            <Separator className="mx-3 my-3" />
+
+                            {/* Movies */}
+                            <GenreSection
+                                title="Movies"
+                                icon={<Video className="mr-2 h-4 w-4 text-cyan-400" />}
+                                genres={movieGenres}
+                                pathname={pathname}
+                                defaultOpen={true}
+                            />
+                        </>
+                    )}
                 </ScrollArea>
             </div>
         </div>

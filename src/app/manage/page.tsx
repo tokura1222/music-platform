@@ -31,6 +31,7 @@ interface Movie {
     youtubeId: string;
     thumbnailUrl?: string;
     description?: string;
+    genreSlug?: string;
     hidden?: boolean;
     plays?: number;
     likes?: number;
@@ -124,6 +125,7 @@ function ManageContent() {
     const [movieArtist, setMovieArtist] = useState('');
     const [movieYoutubeId, setMovieYoutubeId] = useState('');
     const [movieThumbnail, setMovieThumbnail] = useState('');
+    const [movieGenreSlug, setMovieGenreSlug] = useState('');
     const [movieSaving, setMovieSaving] = useState(false);
 
     // Tabs state
@@ -220,6 +222,12 @@ function ManageContent() {
             fetchSongs();
             fetchMovies();
             setGenresData(GENRES); // Load initial GENRES from imported data
+
+            // Set initial movie genre slug if movies exist and genres exist
+            const movieGenres = GENRES.filter(g => g.category === 'movie');
+            if (movieGenres.length > 0) {
+                setMovieGenreSlug(movieGenres[0].slug);
+            }
         }
     }, [isAuthenticated]);
 
@@ -583,6 +591,7 @@ function ManageContent() {
         setMovieArtist(movie.artist);
         setMovieYoutubeId(movie.youtubeId);
         setMovieThumbnail(movie.thumbnailUrl || '');
+        setMovieGenreSlug(movie.genreSlug || '');
         setStatus(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -593,6 +602,8 @@ function ManageContent() {
         setMovieArtist('');
         setMovieYoutubeId('');
         setMovieThumbnail('');
+        const movieGenres = genresData.filter(g => g.category === 'movie');
+        setMovieGenreSlug(movieGenres.length > 0 ? movieGenres[0].slug : '');
         setStatus(null);
     };
 
@@ -623,6 +634,7 @@ function ManageContent() {
                     artist: movieArtist,
                     youtubeId: movieYoutubeId,
                     thumbnailUrl: finalThumbnail,
+                    genreSlug: movieGenreSlug,
                     hidden: editingMovie?.hidden || false
                 }),
             });
@@ -866,6 +878,7 @@ function ManageContent() {
                                 >
                                     <option value="vocal">Vocal Songs</option>
                                     <option value="instrumentals">Instrumentals</option>
+                                    <option value="movie">Movies</option>
                                 </select>
                             </div>
 
@@ -897,8 +910,8 @@ function ManageContent() {
                                             <td className={styles.td}><span className="font-medium">{genre.name}</span></td>
                                             <td className={styles.td}><span className="text-muted-foreground text-sm">{genre.slug}</span></td>
                                             <td className={styles.td}>
-                                                <span className={`px-2 py-1 text-xs rounded-full ${genre.category === 'vocal' ? 'bg-primary/20 text-primary' : 'bg-secondary text-secondary-foreground'}`}>
-                                                    {genre.category === 'vocal' ? 'Vocal' : 'Instrumental'}
+                                                <span className={`px-2 py-1 text-xs rounded-full ${genre.category === 'vocal' ? 'bg-primary/20 text-primary' : genre.category === 'movie' ? 'bg-cyan-500/20 text-cyan-500' : 'bg-secondary text-secondary-foreground'}`}>
+                                                    {genre.category === 'vocal' ? 'Vocal' : genre.category === 'movie' ? 'Movie' : 'Instrumental'}
                                                 </span>
                                             </td>
                                             <td className={styles.td}>
@@ -1270,6 +1283,19 @@ function ManageContent() {
                                 placeholder="空白の場合はYouTubeのデフォルトを使います"
                             />
                         </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>ジャンル (任意)</label>
+                            <select
+                                className={styles.select}
+                                value={movieGenreSlug}
+                                onChange={e => setMovieGenreSlug(e.target.value)}
+                            >
+                                <option value="">ジャンル未設定</option>
+                                {genresData.filter(g => g.category === 'movie').map(g => (
+                                    <option key={g.slug} value={g.slug}>{g.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="mt-4 flex gap-2">
@@ -1317,6 +1343,7 @@ function ManageContent() {
                                 <tr className={styles.tr}>
                                     <th className={styles.th}>Title</th>
                                     <th className={styles.th}>Artist</th>
+                                    <th className={styles.th}>Genre</th>
                                     <th className={styles.th}>YouTube ID</th>
                                     <th className={styles.th}>Status</th>
                                     <th className={styles.th}>Action</th>
@@ -1334,6 +1361,7 @@ function ManageContent() {
                                             </div>
                                         </td>
                                         <td className={styles.td}>{movie.artist}</td>
+                                        <td className={styles.td}>{movie.genreSlug || '-'}</td>
                                         <td className={styles.td}>{movie.youtubeId}</td>
                                         <td className={styles.td}>
                                             <button
@@ -1366,7 +1394,7 @@ function ManageContent() {
                                 ))}
                                 {movies.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="text-center p-8 text-muted-foreground">登録されている動画はありません</td>
+                                        <td colSpan={6} className="text-center p-8 text-muted-foreground">登録されている動画はありません</td>
                                     </tr>
                                 )}
                             </tbody>

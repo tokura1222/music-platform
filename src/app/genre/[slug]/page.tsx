@@ -1,6 +1,8 @@
 import { Separator } from "@/components/ui/separator"
 import { TrackRow } from "@/components/features/track-row"
+import { MovieCard } from "@/components/features/movie-card"
 import { getTracksByGenre } from "@/lib/tracks"
+import { getMoviesByGenre } from "@/lib/movies"
 import { getGenreBySlug, CATEGORY_LABELS } from "@/lib/genres"
 import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
@@ -19,8 +21,14 @@ export default async function GenrePage({ params }: GenrePageProps) {
         notFound()
     }
 
-    const tracks = await getTracksByGenre(slug)
     const categoryLabel = CATEGORY_LABELS[genre.category]
+
+    let items: any[] = []
+    if (genre.category === 'movie') {
+        items = await getMoviesByGenre(slug)
+    } else {
+        items = await getTracksByGenre(slug)
+    }
 
     return (
         <div className="h-full px-4 py-6 lg:px-8">
@@ -36,25 +44,33 @@ export default async function GenrePage({ params }: GenrePageProps) {
                         {genre.name}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        {tracks.length} {tracks.length === 1 ? 'track' : 'tracks'}
+                        {items.length} {genre.category === 'movie' ? (items.length === 1 ? 'movie' : 'movies') : (items.length === 1 ? 'track' : 'tracks')}
                     </p>
                     <Separator className="my-4" />
                 </section>
 
-                {/* Track List */}
+                {/* List */}
                 <section>
-                    {tracks.length === 0 ? (
+                    {items.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <p className="text-muted-foreground">
-                                このジャンルにはまだ楽曲がありません。
+                                このジャンルにはまだ{genre.category === 'movie' ? '動画' : '楽曲'}がありません。
                             </p>
                         </div>
                     ) : (
-                        <div className="space-y-1">
-                            {tracks.map((track, i) => (
-                                <TrackRow key={track.id} track={track} index={i} />
-                            ))}
-                        </div>
+                        genre.category === 'movie' ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {items.map((movie) => (
+                                    <MovieCard key={movie.id} movie={movie} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="space-y-1">
+                                {items.map((track, i) => (
+                                    <TrackRow key={track.id} track={track} index={i} />
+                                ))}
+                            </div>
+                        )
                     )}
                 </section>
             </div>

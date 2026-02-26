@@ -61,3 +61,11 @@ export const getAllMovies = async (options: { includeHidden?: boolean } = {}): P
         return []
     }
 }
+
+/**
+ * Get movies filtered by genreSlug.
+ */
+export const getMoviesByGenre = async (genreSlug: string): Promise<Movie[]> => {
+    const allMovies = await getAllMovies()
+    return allMovies.filter(movie => movie.genreSlug === genreSlug)
+}

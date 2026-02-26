@@ -24,6 +24,7 @@ export interface Movie {
     youtubeId: string
     thumbnailUrl?: string
     description?: string
+    genreSlug?: string
     hidden?: boolean
     // Stats
     plays: number

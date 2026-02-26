@@ -1,4 +1,4 @@
-export type GenreCategory = 'instrumentals' | 'vocal'
+export type GenreCategory = 'instrumentals' | 'vocal' | 'movie'
 
 export interface GenreDefinition {
     slug: string
@@ -33,4 +33,5 @@ export function getGenresByCategory(category: GenreCategory): GenreDefinition[] 
 export const CATEGORY_LABELS: Record<GenreCategory, string> = {
     instrumentals: 'Instrumentals',
     vocal: 'Vocal Songs',
+    movie: 'Movies'
 }

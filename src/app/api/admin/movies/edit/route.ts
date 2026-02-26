@@ -43,6 +43,7 @@ export async function POST(request: Request) {
             youtubeId: data.youtubeId,
             thumbnailUrl: data.thumbnailUrl || undefined,
             description: data.description || undefined,
+            genreSlug: data.genreSlug || undefined,
             hidden: data.hidden,
         };
 
