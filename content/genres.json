@@ -53,5 +53,10 @@
         "slug": "inst-edm",
         "name": "EDM",
         "category": "instrumentals"
+    },
+    {
+        "slug": "movie-reggae",
+        "name": "Reggae",
+        "category": "movie"
     }
 ]
