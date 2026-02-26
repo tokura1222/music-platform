@@ -23,6 +23,18 @@ interface Song {
     [key: string]: any;
 }
 
+interface Movie {
+    id: string;
+    title: string;
+    artist: string;
+    youtubeId: string;
+    thumbnailUrl?: string;
+    description?: string;
+    hidden?: boolean;
+    plays?: number;
+    likes?: number;
+}
+
 function ManageContent() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -104,8 +116,17 @@ function ManageContent() {
     const [editingSong, setEditingSong] = useState<Song | null>(null);
     const [genreFilter, setGenreFilter] = useState('all');
 
+    // Movies list and form state
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
+    const [movieTitle, setMovieTitle] = useState('');
+    const [movieArtist, setMovieArtist] = useState('');
+    const [movieYoutubeId, setMovieYoutubeId] = useState('');
+    const [movieThumbnail, setMovieThumbnail] = useState('');
+    const [movieSaving, setMovieSaving] = useState(false);
+
     // Tabs state
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'songs' | 'genres'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'songs' | 'genres' | 'movies'>('dashboard');
 
     // Genres State
     const [genresData, setGenresData] = useState<GenreDefinition[]>([]);
@@ -122,6 +143,8 @@ function ManageContent() {
             setActiveTab('songs');
         } else if (tabParam === 'genres') {
             setActiveTab('genres');
+        } else if (tabParam === 'movies') {
+            setActiveTab('movies');
         } else {
             setActiveTab('dashboard');
         }
@@ -173,9 +196,22 @@ function ManageContent() {
         }
     };
 
+    const fetchMovies = async () => {
+        try {
+            const res = await fetch('/api/admin/movies');
+            if (res.ok) {
+                const data = await res.json();
+                setMovies(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch movies', error);
+        }
+    };
+
     useEffect(() => {
         if (isAuthenticated) {
             fetchSongs();
+            fetchMovies();
             setGenresData(GENRES); // Load initial GENRES from imported data
         }
     }, [isAuthenticated]);
@@ -524,6 +560,130 @@ function ManageContent() {
         return song.genreSlug === genreFilter;
     });
 
+    // ── Movie Management Hooks ──
+    const handleMovieEdit = (movie: Movie) => {
+        setEditingMovie(movie);
+        setMovieTitle(movie.title);
+        setMovieArtist(movie.artist);
+        setMovieYoutubeId(movie.youtubeId);
+        setMovieThumbnail(movie.thumbnailUrl || '');
+        setStatus(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelMovieEdit = () => {
+        setEditingMovie(null);
+        setMovieTitle('');
+        setMovieArtist('');
+        setMovieYoutubeId('');
+        setMovieThumbnail('');
+        setStatus(null);
+    };
+
+    const handleSaveMovie = async (e: FormEvent) => {
+        e.preventDefault();
+        setStatus(null);
+
+        if (!movieTitle || !movieArtist || !movieYoutubeId) {
+            setStatus({ type: 'error', message: 'タイトル、アーティスト、YouTube IDは必須です' });
+            return;
+        }
+
+        try {
+            setMovieSaving(true);
+
+            // Generate ID if new
+            const movieId = editingMovie?.id || `movie-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+            // Auto-generate thumbnail if empty
+            const finalThumbnail = movieThumbnail || `https://img.youtube.com/vi/${movieYoutubeId}/maxresdefault.jpg`;
+
+            const res = await fetch('/api/admin/movies/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: movieId,
+                    title: movieTitle,
+                    artist: movieArtist,
+                    youtubeId: movieYoutubeId,
+                    thumbnailUrl: finalThumbnail,
+                    hidden: editingMovie?.hidden || false
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                setStatus({
+                    type: 'success',
+                    message: '🎉 動画を保存しました！ デプロイ後反映されます。',
+                });
+                handleCancelMovieEdit();
+                fetchMovies();
+            } else {
+                throw new Error(data.error || '動画の保存に失敗しました');
+            }
+        } catch (error) {
+            console.error(error);
+            setStatus({ type: 'error', message: error instanceof Error ? error.message : '予期しないエラーが発生しました' });
+        } finally {
+            setMovieSaving(false);
+        }
+    };
+
+    const handleToggleMovieHidden = async (movie: Movie) => {
+        try {
+            const newHidden = !movie.hidden;
+            setMovies(movies.map(m => m.id === movie.id ? { ...m, hidden: newHidden } : m));
+
+            const res = await fetch('/api/admin/movies/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...movie,
+                    hidden: newHidden
+                }),
+            });
+
+            if (!res.ok) {
+                setMovies(movies.map(m => m.id === movie.id ? { ...m, hidden: movie.hidden } : m));
+                throw new Error('更新に失敗しました');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('ステータスの更新に失敗しました');
+        }
+    };
+
+    const handleDeleteMovie = async (movie: Movie) => {
+        if (!confirm(`本当に「${movie.title}」を削除しますか？\nこの操作は取り消せません。`)) {
+            return;
+        }
+
+        try {
+            setStatus({ type: 'info', message: '動画を削除中...' });
+
+            const res = await fetch('/api/admin/movies/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: movie.id }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                setStatus({ type: 'success', message: '動画を削除しました' });
+                setMovies(movies.filter(m => m.id !== movie.id));
+                if (editingMovie?.id === movie.id) handleCancelMovieEdit();
+            } else {
+                throw new Error(data.error || '削除に失敗しました');
+            }
+        } catch (error) {
+            console.error(error);
+            setStatus({ type: 'error', message: '削除に失敗しました' });
+        }
+    };
+
     // ── Loading ──
     if (isCheckingAuth) {
         return (
@@ -605,6 +765,13 @@ function ManageContent() {
                 >
                     <Music className="inline-block w-4 h-4 mr-2" />
                     Songs
+                </button>
+                <button
+                    className={`${styles.tab} ${activeTab === 'movies' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('movies')}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block w-4 h-4 mr-2"><path d="m22 8-6 4 6 4V8Z" /><rect width="14" height="12" x="2" y="6" rx="2" ry="2" /></svg>
+                    Movies
                 </button>
                 <button
                     className={`${styles.tab} ${activeTab === 'genres' ? styles.activeTab : ''}`}
@@ -1013,6 +1180,173 @@ function ManageContent() {
                                         </td>
                                     </tr>
                                 ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {/* Movies Tab */}
+            <div style={{ display: activeTab === 'movies' ? 'block' : 'none' }}>
+                <div className="mb-6">
+                    <h2 className="text-xl font-bold mb-2">{editingMovie ? '動画の編集' : '新規動画登録'}</h2>
+                    <p className="text-muted-foreground text-sm mb-4">
+                        YouTubeの動画情報を登録・管理します。
+                    </p>
+                </div>
+
+                <form onSubmit={handleSaveMovie} className="bg-card border border-border rounded-lg p-5 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>タイトル *</label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={movieTitle}
+                                onChange={e => setMovieTitle(e.target.value)}
+                                placeholder="動画のタイトル"
+                                required
+                            />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>アーティスト *</label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={movieArtist}
+                                onChange={e => setMovieArtist(e.target.value)}
+                                placeholder="アーティスト名"
+                                required
+                            />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>YouTube Video ID *</label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={movieYoutubeId}
+                                onChange={e => {
+                                    // URLがペーストされた場合のID抽出補助
+                                    let val = e.target.value;
+                                    const match = val.match(/[?&]v=([^&]+)/) || val.match(/youtu\.be\/([^?]+)/);
+                                    if (match && match[1]) {
+                                        val = match[1];
+                                    }
+                                    setMovieYoutubeId(val);
+                                }}
+                                placeholder="例: HX8YTpOB8Xk (URLのペーストも可)"
+                                required
+                            />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>サムネイルURL (任意)</label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={movieThumbnail}
+                                onChange={e => setMovieThumbnail(e.target.value)}
+                                placeholder="空白の場合はYouTubeのデフォルトを使います"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                        <button
+                            type="submit"
+                            className={styles.submitBtn}
+                            style={{ width: 'auto' }}
+                            disabled={movieSaving}
+                        >
+                            {movieSaving ? (
+                                <><span className={styles.spinner} /> 保存中...</>
+                            ) : (
+                                '🚀 保存してGit Push'
+                            )}
+                        </button>
+                        {editingMovie && (
+                            <button
+                                type="button"
+                                className={styles.cancelBtn}
+                                onClick={handleCancelMovieEdit}
+                                disabled={movieSaving}
+                            >
+                                キャンセル
+                            </button>
+                        )}
+                    </div>
+
+                    {status && activeTab === 'movies' && (
+                        <div className={`mt-4 ${status.type === 'success' ? styles.statusSuccess : status.type === 'error' ? styles.statusError : styles.statusInfo}`}>
+                            <div>{status.message}</div>
+                            {status.details && <div style={{ marginTop: '0.4rem', opacity: 0.8, fontSize: '0.78rem' }}>{status.details}</div>}
+                        </div>
+                    )}
+                </form>
+
+                {/* Movies List */}
+                <div className={styles.songsListSection}>
+                    <div className={styles.filterSection}>
+                        <h2 className={styles.sectionTitle}>登録済み動画 ({movies.length})</h2>
+                    </div>
+
+                    <div className={styles.tableContainer}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr className={styles.tr}>
+                                    <th className={styles.th}>Title</th>
+                                    <th className={styles.th}>Artist</th>
+                                    <th className={styles.th}>YouTube ID</th>
+                                    <th className={styles.th}>Status</th>
+                                    <th className={styles.th}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {movies.map((movie) => (
+                                    <tr key={movie.id} className={styles.tr}>
+                                        <td className={styles.td}>
+                                            <div className="flex items-center gap-3">
+                                                {movie.thumbnailUrl && (
+                                                    <img src={movie.thumbnailUrl} alt={movie.title} className="w-12 h-8 object-cover rounded" />
+                                                )}
+                                                <span className="font-medium">{movie.title}</span>
+                                            </div>
+                                        </td>
+                                        <td className={styles.td}>{movie.artist}</td>
+                                        <td className={styles.td}>{movie.youtubeId}</td>
+                                        <td className={styles.td}>
+                                            <button
+                                                className={`${styles.statusBadge} ${movie.hidden ? styles.private : styles.public}`}
+                                                onClick={() => handleToggleMovieHidden(movie)}
+                                            >
+                                                {movie.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
+                                                {movie.hidden ? 'Private' : 'Public'}
+                                            </button>
+                                        </td>
+                                        <td className={styles.td}>
+                                            <div className="flex gap-1">
+                                                <button
+                                                    className={styles.editBtn}
+                                                    onClick={() => handleMovieEdit(movie)}
+                                                    title="詳細編集"
+                                                >
+                                                    <Settings2 size={14} />
+                                                </button>
+                                                <button
+                                                    className={styles.deleteBtn}
+                                                    onClick={() => handleDeleteMovie(movie)}
+                                                    title="削除"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {movies.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="text-center p-8 text-muted-foreground">登録されている動画はありません</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

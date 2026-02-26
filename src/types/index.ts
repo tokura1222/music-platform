@@ -16,3 +16,16 @@ export interface Track {
     duration?: string
     genre?: string
 }
+
+export interface Movie {
+    id: string
+    title: string
+    artist: string
+    youtubeId: string
+    thumbnailUrl?: string
+    description?: string
+    hidden?: boolean
+    // Stats
+    plays: number
+    likes: number
+}
