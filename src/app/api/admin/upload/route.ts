@@ -12,28 +12,53 @@ export async function POST(request: NextRequest) {
 
     try {
         const formData = await request.formData();
-        const file = formData.get('file') as File | null;
 
-        if (!file) {
+        let file = formData.get('file') as File | null;
+        let fileType = '';
+        let originalName = '';
+        let fileBuffer: Buffer | null = null;
+
+        const uploadId = formData.get('uploadId') as string;
+        const fileName = formData.get('fileName') as string;
+        const providedFileType = formData.get('fileType') as string;
+
+        if (uploadId && fileName) {
+            const fs = await import('fs/promises');
+            const os = await import('os');
+            const tempFilePath = path.join(os.tmpdir(), uploadId);
+            try {
+                fileBuffer = await fs.readFile(tempFilePath);
+                originalName = fileName;
+                fileType = providedFileType || 'audio/mpeg';
+                fs.unlink(tempFilePath).catch(err => console.error('Failed to rm temp', err));
+            } catch (err) {
+                console.error('Failed to read chunked temp file', err);
+                return NextResponse.json({ error: 'アップロードの復元に失敗しました' }, { status: 400 });
+            }
+        } else if (file) {
+            fileType = file.type;
+            originalName = file.name;
+            fileBuffer = Buffer.from(await file.arrayBuffer());
+        } else {
             return NextResponse.json({ error: 'ファイルが選択されていません' }, { status: 400 });
         }
 
         // Validate file type
         const allowedAudio = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/aac'];
         const allowedImage = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        const isAudio = allowedAudio.includes(file.type);
-        const isImage = allowedImage.includes(file.type);
+        const isAudio = allowedAudio.includes(fileType);
+        const isImage = allowedImage.includes(fileType);
 
         if (!isAudio && !isImage) {
             return NextResponse.json(
-                { error: `対応していないファイル形式です: ${file.type}` },
+                { error: `対応していないファイル形式です: ${fileType}` },
                 { status: 400 }
             );
         }
 
         // Generate unique filename
-        const ext = path.extname(file.name) || (isAudio ? '.mp3' : '.jpg');
-        const baseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const ext = path.extname(originalName) || (isAudio ? '.mp3' : '.jpg');
+        const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
         const uniqueName = `${baseName}_${Date.now()}${ext}`;
 
         // Define paths
@@ -41,9 +66,8 @@ export async function POST(request: NextRequest) {
         const absolutePath = path.join(process.cwd(), 'public', 'music', uniqueName);
         const webPath = `/music/${uniqueName}`;
 
-        // Read file content
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
+        // Read file content (already loaded in fileBuffer)
+        const buffer = fileBuffer!;
 
         // Commit and push (to GitHub or local)
         // Note: In Vercel (GitHub strategy), this will push to the repo but the file won't be available

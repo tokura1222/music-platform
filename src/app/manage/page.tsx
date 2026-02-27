@@ -267,6 +267,35 @@ function ManageContent() {
         setGitConfigured(false);
     };
 
+    const uploadFileChunked = async (file: File): Promise<string> => {
+        const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        const uploadId = `upload_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+        for (let i = 0; i < totalChunks; i++) {
+            const start = i * CHUNK_SIZE;
+            const end = Math.min(start + CHUNK_SIZE, file.size);
+            const chunk = file.slice(start, end);
+
+            const formData = new FormData();
+            formData.append('uploadId', uploadId);
+            formData.append('chunkIndex', i.toString());
+            formData.append('totalChunks', totalChunks.toString());
+            formData.append('chunk', chunk);
+
+            const res = await fetch('/api/admin/chunk-upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || `チャンク送信エラー (${i + 1}/${totalChunks})`);
+            }
+        }
+        return uploadId;
+    };
+
     const handlePublish = async (e: FormEvent) => {
         e.preventDefault();
         setStatus(null);
@@ -286,13 +315,31 @@ function ManageContent() {
                 // シングル編集ロジック
                 let audioUrl = editingSong?.url;
                 if (audioFiles.length > 0) {
-                    setStatus({ type: 'info', message: '音声ファイルをアップロード中...' });
-                    const audioFormData = new FormData();
-                    audioFormData.append('file', audioFiles[0]);
-                    const audioRes = await fetch('/api/admin/upload', {
-                        method: 'POST',
-                        body: audioFormData,
-                    });
+                    const audioFile = audioFiles[0];
+                    let audioRes;
+
+                    if (audioFile.size > 3 * 1024 * 1024) {
+                        setStatus({ type: 'info', message: '大容量の音声ファイルを分割アップロード中...' });
+                        const uploadId = await uploadFileChunked(audioFile);
+                        const audioFormData = new FormData();
+                        audioFormData.append('uploadId', uploadId);
+                        audioFormData.append('fileName', audioFile.name);
+                        audioFormData.append('fileType', audioFile.type);
+
+                        audioRes = await fetch('/api/admin/upload', {
+                            method: 'POST',
+                            body: audioFormData,
+                        });
+                    } else {
+                        setStatus({ type: 'info', message: '音声ファイルをアップロード中...' });
+                        const audioFormData = new FormData();
+                        audioFormData.append('file', audioFile);
+                        audioRes = await fetch('/api/admin/upload', {
+                            method: 'POST',
+                            body: audioFormData,
+                        });
+                    }
+
                     if (!audioRes.ok) {
                         const err = await audioRes.json();
                         throw new Error(err.error || '音声ファイルのアップロードに失敗しました');
@@ -384,7 +431,16 @@ function ManageContent() {
                     batchFormData.append('category', categoryValue);
                     batchFormData.append('genreSlug', genreSlug);
                     batchFormData.append('isFreePlan', isFreePlan.toString());
-                    batchFormData.append('audioFiles', audioFile);
+
+                    if (audioFile.size > 3 * 1024 * 1024) {
+                        setStatus({ type: 'info', message: `${i + 1} / ${audioFiles.length} 曲を分割アップロード中... (${audioFile.name})` });
+                        const uploadId = await uploadFileChunked(audioFile);
+                        batchFormData.append('audioUploadId', uploadId);
+                        batchFormData.append('audioFileName', audioFile.name);
+                        batchFormData.append('audioFileType', audioFile.type);
+                    } else {
+                        batchFormData.append('audioFiles', audioFile);
+                    }
 
                     if (matchingCover) {
                         batchFormData.append('coverFiles', matchingCover);

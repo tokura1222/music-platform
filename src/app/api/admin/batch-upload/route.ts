@@ -29,8 +29,45 @@ export async function POST(request: NextRequest) {
         // Extract files
         const audioFiles = formData.getAll('audioFiles') as File[];
         const coverFiles = formData.getAll('coverFiles') as File[];
+        const audioUploadId = formData.get('audioUploadId') as string;
+        const audioFileName = formData.get('audioFileName') as string;
+        const audioFileType = formData.get('audioFileType') as string || 'audio/mpeg';
 
-        if (!audioFiles || audioFiles.length === 0) {
+        const processedAudioFiles: { name: string, type: string, buffer: Buffer }[] = [];
+
+        // Handle standard multipart files
+        if (audioFiles && audioFiles.length > 0) {
+            for (const file of audioFiles) {
+                processedAudioFiles.push({
+                    name: file.name,
+                    type: file.type || 'audio/mpeg',
+                    buffer: Buffer.from(await file.arrayBuffer())
+                });
+            }
+        }
+
+        // Handle chunked file uploads via temp directory
+        if (audioUploadId && audioFileName) {
+            const fs = await import('fs/promises');
+            const os = await import('os');
+            const tempFilePath = path.join(os.tmpdir(), audioUploadId);
+            try {
+                const buffer = await fs.readFile(tempFilePath);
+                processedAudioFiles.push({
+                    name: audioFileName,
+                    type: audioFileType,
+                    buffer
+                });
+
+                // Cleanup temp file asynchronously
+                fs.unlink(tempFilePath).catch(err => console.error('Failed to cleanup temp file', err));
+            } catch (err) {
+                console.error('Failed to read chunked file from temp', err);
+                return NextResponse.json({ error: 'アップロードされた音声ファイルの復元に失敗しました' }, { status: 400 });
+            }
+        }
+
+        if (processedAudioFiles.length === 0) {
             return NextResponse.json({ error: '音声ファイルが選択されていません' }, { status: 400 });
         }
 
@@ -42,7 +79,7 @@ export async function POST(request: NextRequest) {
         const allowedAudio = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/aac', 'audio/x-m4a'];
         const allowedImage = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-        for (const file of audioFiles) {
+        for (const file of processedAudioFiles) {
             if (!allowedAudio.includes(file.type)) {
                 return NextResponse.json(
                     { error: `対応していない音声ファイル形式です: ${file.name} (${file.type})` },
@@ -60,7 +97,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Process audio files
-        for (const audioFile of audioFiles) {
+        for (const audioFile of processedAudioFiles) {
             // e.g. "My Song.mp3" -> "My Song"
             // Get original extension to ensure correct saving
             const originalAudioExt = path.extname(audioFile.name) || '.mp3';
@@ -100,11 +137,10 @@ export async function POST(request: NextRequest) {
             const audioUrl = `/music/${uniqueAudioName}`;
 
             // Add audio file to commit
-            const audioBytes = await audioFile.arrayBuffer();
             commitFiles.push({
                 absolutePath: path.join(process.cwd(), 'public', 'music', uniqueAudioName),
                 relativePath: `public/music/${uniqueAudioName}`,
-                content: Buffer.from(audioBytes),
+                content: audioFile.buffer,
             });
 
             // Add cover file to commit if matched
