@@ -4,5 +4,6 @@
   "artist": "toku",
   "url": "/music/modern-pop_21b00264-40d6-468b-8de9-13a58aaffd7d.mp3",
   "coverPath": "/music/modern-pop_21b00264-40d6-468b-8de9-13a58aaffd7d.jpeg",
-  "genreSlug": "inst-cinematic"
+  "genreSlug": "inst-acoustic",
+  "isFreePlan": false
 }
