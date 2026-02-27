@@ -46,6 +46,22 @@ export async function POST(request: NextRequest) {
             }
         }
 
+        const coverUploadId = formData.get('coverUploadId') as string;
+        const coverFileName = formData.get('coverFileName') as string;
+        const coverFileType = formData.get('coverFileType') as string || 'image/jpeg';
+
+        const processedCoverFiles: { name: string, type: string, buffer: Buffer }[] = [];
+
+        if (coverFiles && coverFiles.length > 0) {
+            for (const file of coverFiles) {
+                processedCoverFiles.push({
+                    name: file.name,
+                    type: file.type || 'image/jpeg',
+                    buffer: Buffer.from(await file.arrayBuffer())
+                });
+            }
+        }
+
         // Handle chunked file uploads via temp directory
         if (audioUploadId && audioFileName) {
             const fs = await import('fs/promises');
@@ -64,6 +80,25 @@ export async function POST(request: NextRequest) {
             } catch (err) {
                 console.error('Failed to read chunked file from temp', err);
                 return NextResponse.json({ error: 'アップロードされた音声ファイルの復元に失敗しました' }, { status: 400 });
+            }
+        }
+
+        if (coverUploadId && coverFileName) {
+            const fs = await import('fs/promises');
+            const os = await import('os');
+            const tempFilePath = path.join(os.tmpdir(), coverUploadId);
+            try {
+                const buffer = await fs.readFile(tempFilePath);
+                processedCoverFiles.push({
+                    name: coverFileName,
+                    type: coverFileType,
+                    buffer
+                });
+
+                fs.unlink(tempFilePath).catch(err => console.error('Failed to cleanup cover temp file', err));
+            } catch (err) {
+                console.error('Failed to read chunked cover file from temp', err);
+                return NextResponse.json({ error: 'アップロードされた画像ファイルの復元に失敗しました' }, { status: 400 });
             }
         }
 
@@ -87,7 +122,7 @@ export async function POST(request: NextRequest) {
                 );
             }
         }
-        for (const file of coverFiles) {
+        for (const file of processedCoverFiles) {
             if (!allowedImage.includes(file.type)) {
                 return NextResponse.json(
                     { error: `対応していない画像ファイル形式です: ${file.name} (${file.type})` },
@@ -119,11 +154,11 @@ export async function POST(request: NextRequest) {
                 || `song-${timestamp}`;
 
             // Check if there is a matching cover file by base filename
-            let matchingCover: File | null = null;
+            let matchingCover: { name: string, type: string, buffer: Buffer } | null = null;
             let uniqueCoverName: string | null = null;
             let coverPath: string | null = null;
 
-            for (const cover of coverFiles) {
+            for (const cover of processedCoverFiles) {
                 const coverExt = path.extname(cover.name);
                 const coverBaseName = path.basename(cover.name, coverExt);
                 if (coverBaseName === baseName) {
@@ -145,11 +180,10 @@ export async function POST(request: NextRequest) {
 
             // Add cover file to commit if matched
             if (matchingCover && uniqueCoverName) {
-                const coverBytes = await matchingCover.arrayBuffer();
                 commitFiles.push({
                     absolutePath: path.join(process.cwd(), 'public', 'music', uniqueCoverName),
                     relativePath: `public/music/${uniqueCoverName}`,
-                    content: Buffer.from(coverBytes),
+                    content: matchingCover.buffer,
                 });
             }
 

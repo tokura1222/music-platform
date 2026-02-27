@@ -350,13 +350,31 @@ function ManageContent() {
 
                 let coverPath = editingSong?.coverPath;
                 if (coverFiles.length > 0) {
-                    setStatus({ type: 'info', message: 'カバー画像をアップロード中...' });
-                    const coverFormData = new FormData();
-                    coverFormData.append('file', coverFiles[0]);
-                    const coverRes = await fetch('/api/admin/upload', {
-                        method: 'POST',
-                        body: coverFormData,
-                    });
+                    const coverFile = coverFiles[0];
+                    let coverRes;
+
+                    if (coverFile.size > 3 * 1024 * 1024) {
+                        setStatus({ type: 'info', message: '大容量のカバー画像を分割アップロード中...' });
+                        const uploadId = await uploadFileChunked(coverFile);
+                        const coverFormData = new FormData();
+                        coverFormData.append('uploadId', uploadId);
+                        coverFormData.append('fileName', coverFile.name);
+                        coverFormData.append('fileType', coverFile.type);
+
+                        coverRes = await fetch('/api/admin/upload', {
+                            method: 'POST',
+                            body: coverFormData,
+                        });
+                    } else {
+                        setStatus({ type: 'info', message: 'カバー画像をアップロード中...' });
+                        const coverFormData = new FormData();
+                        coverFormData.append('file', coverFile);
+                        coverRes = await fetch('/api/admin/upload', {
+                            method: 'POST',
+                            body: coverFormData,
+                        });
+                    }
+
                     if (!coverRes.ok) {
                         const err = await coverRes.json();
                         throw new Error(err.error || 'カバー画像のアップロードに失敗しました');
@@ -443,7 +461,15 @@ function ManageContent() {
                     }
 
                     if (matchingCover) {
-                        batchFormData.append('coverFiles', matchingCover);
+                        if (matchingCover.size > 3 * 1024 * 1024) {
+                            setStatus({ type: 'info', message: `${i + 1} / ${audioFiles.length} 曲のカバー画像を分割アップロード中... (${matchingCover.name})` });
+                            const coverUploadId = await uploadFileChunked(matchingCover);
+                            batchFormData.append('coverUploadId', coverUploadId);
+                            batchFormData.append('coverFileName', matchingCover.name);
+                            batchFormData.append('coverFileType', matchingCover.type);
+                        } else {
+                            batchFormData.append('coverFiles', matchingCover);
+                        }
                     }
 
                     try {
