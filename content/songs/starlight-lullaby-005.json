@@ -3,5 +3,7 @@
   "artist": "toku",
   "category": "vocal",
   "genreSlug": "vocal-sleep",
-  "url": "/music/Starlight_Lullaby_005_1772194775026.mp3"
+  "url": "/music/Starlight_Lullaby_005_1772194775026.mp3",
+  "isFreePlan": false,
+  "coverPath": "/music/Starlight_Lullaby_1772197937399.jpeg"
 }
