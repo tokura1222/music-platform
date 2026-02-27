@@ -58,5 +58,10 @@
         "slug": "movie-reggae",
         "name": "Reggae",
         "category": "movie"
+    },
+    {
+        "slug": "vocal-sleep",
+        "name": "sleeping",
+        "category": "vocal"
     }
 ]
