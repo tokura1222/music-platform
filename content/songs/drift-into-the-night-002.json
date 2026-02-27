@@ -3,5 +3,7 @@
   "artist": "toku",
   "category": "vocal",
   "genreSlug": "vocal-sleep",
-  "url": "/music/Drift_Into_the_Night_002_1772193564298.mp3"
+  "url": "/music/Drift_Into_the_Night_002_1772193564298.mp3",
+  "isFreePlan": false,
+  "coverPath": "/music/Drift_Into_the_Night_1772199655010.jpeg"
 }
