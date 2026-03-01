@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Home, Heart, Music2, Piano, Mic2, LogOut, ChevronDown, ChevronRight, Video } from "lucide-react"
+import { Home, Heart, Music2, Piano, Mic2, LogOut, ChevronDown, ChevronRight, Video, Mail } from "lucide-react"
 import Cookies from 'js-cookie'
 import { useState } from "react"
 
@@ -88,10 +88,10 @@ export function Sidebar({ className }: SidebarProps) {
     }
 
     return (
-        <div className={cn("pb-12 border-r bg-background", className)}>
-            <div className="space-y-4 py-4">
+        <div className={cn("pb-12 border-r bg-background flex flex-col h-full", className)}>
+            <div className="space-y-4 py-4 flex-1 flex flex-col overflow-hidden">
                 {/* Logo */}
-                <div className="px-3 py-2">
+                <div className="px-3 py-2 flex-shrink-0">
                     <div className="mb-6 px-4">
                         <Link href="/">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -144,9 +144,9 @@ export function Sidebar({ className }: SidebarProps) {
                     </div>
                 </div>
 
-                <Separator className="mx-3" />
+                <Separator className="mx-3 flex-shrink-0" />
 
-                <ScrollArea className="h-[calc(100vh-280px)] px-1">
+                <ScrollArea className="flex-1 px-1">
                     {/* Instrumentals */}
                     <GenreSection
                         title="Instrumentals"
@@ -182,6 +182,16 @@ export function Sidebar({ className }: SidebarProps) {
                         </>
                     )}
                 </ScrollArea>
+
+                <div className="px-4 pt-4 flex-shrink-0">
+                    <Separator className="mb-4" />
+                    <Button variant="outline" className="w-full text-muted-foreground hover:text-foreground" asChild>
+                        <a href="mailto:info@zion-online.com">
+                            <Mail className="mr-2 h-4 w-4" />
+                            お問合せはこちら
+                        </a>
+                    </Button>
+                </div>
             </div>
         </div>
     )
