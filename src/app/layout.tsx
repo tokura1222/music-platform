@@ -13,6 +13,7 @@ import { VideoProvider } from '@/context/VideoContext';
 import { FloatingVideoPlayer } from '@/components/features/floating-video-player';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { Suspense } from "react"
+import Script from "next/script"
 
 export const metadata: Metadata = {
   title: 'Zion Online - Reggae Music Platform',
@@ -26,6 +27,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className="dark">
+      <head>
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-LSB0X30FST" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-LSB0X30FST');
+          `}
+        </Script>
+      </head>
       <body className="min-h-screen bg-background antialiased">
         <AnalyticsTracker />
         <AudioProvider>
