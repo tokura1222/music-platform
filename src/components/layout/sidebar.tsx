@@ -163,7 +163,7 @@ export function Sidebar({ className }: SidebarProps) {
                         icon={<Piano className="mr-2 h-4 w-4 text-emerald-400" />}
                         genres={instGenres}
                         pathname={pathname}
-                        defaultOpen={true}
+                        defaultOpen={false}
                     />
 
                     <Separator className="mx-3 my-3" />
@@ -174,7 +174,7 @@ export function Sidebar({ className }: SidebarProps) {
                         icon={<Mic2 className="mr-2 h-4 w-4 text-amber-400" />}
                         genres={vocalGenres}
                         pathname={pathname}
-                        defaultOpen={true}
+                        defaultOpen={false}
                     />
 
                     {movieGenres.length > 0 && (
@@ -187,7 +187,7 @@ export function Sidebar({ className }: SidebarProps) {
                                 icon={<Video className="mr-2 h-4 w-4 text-cyan-400" />}
                                 genres={movieGenres}
                                 pathname={pathname}
-                                defaultOpen={true}
+                                defaultOpen={false}
                             />
                         </>
                     )}

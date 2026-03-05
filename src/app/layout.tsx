@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/sidebar';
 import { Player } from '@/components/layout/player';
 import { DonateButton } from '@/components/layout/donate-button';
 import { Menu } from 'lucide-react';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Toaster } from "@/components/ui/sonner"
@@ -44,17 +45,10 @@ export default function RootLayout({
         <AudioProvider>
           <VideoProvider>
             <div className="relative flex min-h-screen flex-col">
-              {/* Desktop Sidebar (Fixed Left) */}
-              <aside className="fixed left-0 top-0 bottom-20 z-40 hidden w-64 border-r bg-background md:block">
-                <Suspense fallback={<div className="w-64 h-full border-r bg-background" />}>
-                  <Sidebar className="h-full" />
-                </Suspense>
-              </aside>
-
-              {/* Main Content Wrapper */}
-              <div className="flex flex-1 flex-col md:pl-64 pb-20">
+              {/* Content area with Resizable Sidebar */}
+              <div className="flex flex-1 flex-col pb-20 overflow-hidden">
                 {/* Header (Top Bar) */}
-                <header className="sticky top-0 z-30 flex h-16 items-center border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   {/* Mobile Menu Trigger */}
                   <div className="mr-4 md:hidden">
                     <Sheet>
@@ -91,10 +85,30 @@ export default function RootLayout({
                   </div>
                 </header>
 
-                {/* Page Content */}
-                <main className="flex-1">
-                  {children}
-                </main>
+                <ResizablePanelGroup
+                  direction="horizontal"
+                  className="flex-1 items-stretch"
+                >
+                  <ResizablePanel
+                    defaultSize={20}
+                    minSize={15}
+                    maxSize={30}
+                    className="hidden md:block"
+                  >
+                    <Suspense fallback={<div className="h-full bg-background" />}>
+                      <Sidebar className="h-full border-r-0" />
+                    </Suspense>
+                  </ResizablePanel>
+
+                  <ResizableHandle withHandle className="hidden md:flex" />
+
+                  <ResizablePanel defaultSize={80}>
+                    {/* Page Content */}
+                    <main className="h-full overflow-y-auto w-full">
+                      {children}
+                    </main>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </div>
 
               {/* Persistent Player (Fixed Bottom) */}
