@@ -16,6 +16,9 @@ export default function AboutUsPage() {
           <p className="text-muted-foreground leading-7">
             Zion Online（ザイオン・オンライン）は無料オリジナル音楽素材サイトです。動画に使えるBGMを探している皆様のために、安心してお使い頂けるBGMを無料で公開しています。もちろん動画、インターネット、放送、その他様々なシーンで自由にお使い頂けます。
           </p>
+          <p className="text-muted-foreground leading-7 mt-4">
+            ご連絡はこちら：<a href="mailto:info@zion-online.com" className="text-primary hover:underline">info@zion-online.com</a>
+          </p>
         </div>
 
         <Separator />
