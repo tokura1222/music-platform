@@ -12,9 +12,10 @@ import { useDuration } from "@/hooks/useDuration"
 interface TrackRowProps {
     track: Track
     index: number
+    playlist?: Track[]
 }
 
-export function TrackRow({ track, index }: TrackRowProps) {
+export function TrackRow({ track, index, playlist }: TrackRowProps) {
     const { playTrack, currentTrack, isPlaying } = useAudio()
     const [isLiked, setIsLiked] = useState(false)
     const duration = useDuration(track.url)
@@ -83,7 +84,7 @@ export function TrackRow({ track, index }: TrackRowProps) {
                         "absolute inset-0 h-8 w-8 transition-opacity duration-200",
                         isCurrentPlaying ? "opacity-100 text-primary" : "opacity-0 group-hover:opacity-100"
                     )}
-                    onClick={() => playTrack(track)}
+                    onClick={() => playTrack(track, playlist)}
                     aria-label={isCurrentPlaying ? "一時停止" : "再生"}
                 >
                     {isCurrentPlaying ? (

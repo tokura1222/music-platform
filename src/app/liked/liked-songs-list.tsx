@@ -35,7 +35,7 @@ export function LikedSongsList({ allTracks }: LikedSongsListProps) {
     return (
         <div className="space-y-1">
             {likedTracks.map((track, i) => (
-                <TrackRow key={track.id} track={track} index={i} />
+                <TrackRow key={track.id} track={track} index={i} playlist={likedTracks} />
             ))}
         </div>
     )

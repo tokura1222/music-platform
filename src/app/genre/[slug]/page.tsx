@@ -67,7 +67,7 @@ export default async function GenrePage({ params }: GenrePageProps) {
                         ) : (
                             <div className="space-y-1">
                                 {items.map((track, i) => (
-                                    <TrackRow key={track.id} track={track} index={i} />
+                                    <TrackRow key={track.id} track={track} index={i} playlist={items} />
                                 ))}
                             </div>
                         )

@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils"
 interface TrackCardProps {
     track: Track
     className?: string
+    playlist?: Track[]
 }
 
-export function TrackCard({ track, className }: TrackCardProps) {
+export function TrackCard({ track, className, playlist }: TrackCardProps) {
     const { playTrack, currentTrack, isPlaying } = useAudio()
     const isCurrent = currentTrack?.id === track.id
     const isCurrentPlaying = isCurrent && isPlaying
@@ -37,7 +38,7 @@ export function TrackCard({ track, className }: TrackCardProps) {
                     <Button
                         size="icon"
                         className="rounded-full bg-primary text-primary-foreground shadow-xl hover:scale-105 transition-transform"
-                        onClick={() => playTrack(track)}
+                        onClick={() => playTrack(track, playlist)}
                         aria-label={isCurrentPlaying ? "一時停止" : "再生"}
                     >
                         {isCurrentPlaying ? (

@@ -23,6 +23,7 @@ export default async function AllSongsPage() {
                         key={track.id}
                         track={track}
                         className="w-full flex-auto"
+                        playlist={tracks}
                     />
                 ))}
             </div>

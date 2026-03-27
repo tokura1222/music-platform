@@ -7,7 +7,7 @@ interface AudioContextType {
     currentTrack: Track | null
     isPlaying: boolean
     volume: number
-    playTrack: (track: Track) => void
+    playTrack: (track: Track, playlist?: Track[]) => void
     togglePlay: () => void
     setVolume: (volume: number) => void
 }
@@ -28,6 +28,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const [currentTime, setCurrentTime] = useState(0)
     const [duration, setDuration] = useState(0)
     const audioRef = useRef<HTMLAudioElement | null>(null)
+    const currentTrackRef = useRef<Track | null>(null)
+    const playlistRef = useRef<Track[]>([])
+    const playNextTrackRef = useRef<(() => void) | null>(null)
 
     useEffect(() => {
         audioRef.current = new Audio()
@@ -35,7 +38,13 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
         const updateTime = () => setCurrentTime(audio.currentTime)
         const updateDuration = () => setDuration(audio.duration)
-        const onEnded = () => setIsPlaying(false)
+        const onEnded = () => {
+            if (playNextTrackRef.current) {
+                playNextTrackRef.current()
+            } else {
+                setIsPlaying(false)
+            }
+        }
 
         audio.addEventListener('timeupdate', updateTime)
         audio.addEventListener('loadedmetadata', updateDuration)
@@ -66,8 +75,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         }
     }, [currentTrack, isPlaying])
 
-    const playTrack = React.useCallback(async (track: Track) => {
+    const playTrack = React.useCallback(async (track: Track, playlist?: Track[]) => {
         if (!audioRef.current) return
+
+        if (playlist) {
+            playlistRef.current = playlist
+        } else {
+            // Keep existing playlist if the track is in it, otherwise clear it so it doesn't jump to unrelated songs
+            if (!playlistRef.current.find(t => t.id === track.id)) {
+                playlistRef.current = []
+            }
+        }
 
         // If same track, just toggle
         if (currentTrack?.id === track.id) {
@@ -83,6 +101,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
         // New track
         setCurrentTrack(track)
+        currentTrackRef.current = track
         setIsPlaying(true)
         audioRef.current.src = track.url
 
@@ -109,6 +128,27 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             setIsPlaying(false)
         }
     }, [currentTrack, isPlaying])
+
+    const playNextTrack = React.useCallback(() => {
+        const current = currentTrackRef.current
+        const pl = playlistRef.current
+        if (!current || pl.length === 0) {
+            setIsPlaying(false)
+            return
+        }
+
+        const idx = pl.findIndex(t => t.id === current.id)
+        if (idx !== -1 && idx < pl.length - 1) {
+            const nextTrack = pl[idx + 1]
+            playTrack(nextTrack, pl)
+        } else {
+            setIsPlaying(false) // Reached the end
+        }
+    }, [playTrack])
+
+    useEffect(() => {
+        playNextTrackRef.current = playNextTrack
+    }, [playNextTrack])
 
     const seek = React.useCallback((time: number) => {
         if (!audioRef.current) return

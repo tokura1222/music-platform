@@ -62,7 +62,7 @@ export default async function FreePlanExclusivePage() {
                                 <ScrollArea>
                                     <div className="flex space-x-4 pb-4">
                                         {otherTracks.map((track) => (
-                                            <TrackCard key={track.id} track={track} />
+                                            <TrackCard key={track.id} track={track} playlist={otherTracks} />
                                         ))}
                                     </div>
                                     <ScrollBar orientation="horizontal" />
@@ -82,7 +82,7 @@ export default async function FreePlanExclusivePage() {
                             <Separator className="my-4" />
                             <div className="space-y-1">
                                 {otherTracks.map((track, i) => (
-                                    <TrackRow key={track.id} track={track} index={i} />
+                                    <TrackRow key={track.id} track={track} index={i} playlist={otherTracks} />
                                 ))}
                             </div>
                         </section>

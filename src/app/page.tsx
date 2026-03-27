@@ -53,7 +53,7 @@ export default async function HomePage() {
             <ScrollArea>
               <div className="flex space-x-4 pb-4">
                 {newReleases.map((track) => (
-                  <TrackCard key={track.id} track={track} />
+                  <TrackCard key={track.id} track={track} playlist={newReleases} />
                 ))}
               </div>
               <ScrollBar orientation="horizontal" />
@@ -76,7 +76,7 @@ export default async function HomePage() {
           <Separator className="my-4" />
           <div className="space-y-1">
             {trending.map((track, i) => (
-              <TrackRow key={track.id} track={track} index={i} />
+              <TrackRow key={track.id} track={track} index={i} playlist={trending} />
             ))}
           </div>
         </section>
