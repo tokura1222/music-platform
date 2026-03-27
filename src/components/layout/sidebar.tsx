@@ -92,10 +92,10 @@ export function Sidebar({ className }: SidebarProps) {
             <div className="space-y-4 py-4 flex-1 flex flex-col overflow-hidden">
                 {/* Logo */}
                 <div className="px-3 py-2 flex-shrink-0">
-                    <div className="mb-6 px-4">
+                    <div className="mb-6 px-4 flex justify-center">
                         <Link href="/">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/logo.png" alt="Zion Online" className="h-12 w-auto object-contain" />
+                            <img src="/logo.png" alt="Zion Online" className="h-24 w-auto object-contain hover:scale-105 transition-transform" />
                         </Link>
                     </div>
 
