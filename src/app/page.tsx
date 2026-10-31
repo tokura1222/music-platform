@@ -1,6 +1,12 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { Music, AppWindow } from 'lucide-react';
 import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+
+export const metadata: Metadata = {
+  title: { absolute: 'Zion Online｜音楽とアプリのハブ' },
+  description: 'レゲエ音楽と、配信・講義の切り抜きアプリを届けるサイト',
+};
 
 const entries = [
   { href: '/music', title: 'Music', desc: 'AIで制作したレゲエ楽曲・映像を無料で楽しめる音楽サイト。', Icon: Music },

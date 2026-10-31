@@ -3,8 +3,12 @@ import './globals.css';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import Script from "next/script"
 export const metadata: Metadata = {
-  title: 'Zion Online',
-  description: 'Zion Online — Music and Apps.',
+  metadataBase: new URL('https://www.zion-online.com'),
+  title: {
+    default: 'Zion Online｜音楽とアプリのハブ',
+    template: '%s | Zion Online',
+  },
+  description: 'レゲエ音楽と、配信・講義の切り抜きアプリを届けるサイト',
 };
 
 export default function RootLayout({

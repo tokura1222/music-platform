@@ -3,7 +3,10 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
-export const metadata: Metadata = { title: 'Apps | Zion Online' };
+export const metadata: Metadata = {
+  title: 'Apps',
+  description: '配信・講義の切り抜きなど、AIを使ったアプリ一覧',
+};
 
 export default function AppsPage() {
   return (
