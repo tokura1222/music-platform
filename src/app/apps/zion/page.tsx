@@ -12,13 +12,13 @@ export const metadata: Metadata = {
     siteName: 'Zion Online',
     locale: 'ja_JP',
     type: 'website',
-    images: [{ url: '/apps/zion/og_1200x630.svg', width: 1200, height: 630, alt: 'Zion 切り抜き' }],
+    images: [{ url: '/apps/zion/og_1200x630.png', width: 1200, height: 630, alt: 'Zion 切り抜き' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Zion 切り抜き｜長い配信を字幕つき縦型ショートに',
     description: '配信者・講義向け。権利のある動画を渡すだけで、字幕つき縦型ショートをAIが作成。無料お試しあり',
-    images: ['/apps/zion/og_1200x630.svg'],
+    images: ['/apps/zion/og_1200x630.png'],
   },
 };
 
