@@ -61,7 +61,7 @@ export function Sidebar({ className }: SidebarProps) {
                                 className="w-full justify-start font-medium text-muted-foreground hover:text-foreground"
                                 asChild
                             >
-                                <Link href="/" target="_blank" rel="noopener noreferrer">
+                                <Link href="/music" target="_blank" rel="noopener noreferrer">
                                     <Home className="mr-2 h-4 w-4" />
                                     サイトを開く
                                 </Link>
@@ -102,51 +102,51 @@ export function Sidebar({ className }: SidebarProps) {
                     {/* Library */}
                     <div className="space-y-1">
                         <Button
-                            variant={pathname === '/' ? 'secondary' : 'ghost'}
+                            variant={pathname === '/music' ? 'secondary' : 'ghost'}
                             className="w-full justify-start font-medium"
                             asChild
                         >
-                            <Link href="/">
+                            <Link href="/music">
                                 <Home className="mr-2 h-4 w-4" />
                                 Home
                             </Link>
                         </Button>
                         <Button
-                            variant={pathname === '/liked' ? 'secondary' : 'ghost'}
+                            variant={pathname === '/music/liked' ? 'secondary' : 'ghost'}
                             className="w-full justify-start font-medium"
                             asChild
                         >
-                            <Link href="/liked">
+                            <Link href="/music/liked">
                                 <Heart className="mr-2 h-4 w-4" />
                                 Liked Songs
                             </Link>
                         </Button>
                         <Button
-                            variant={pathname === '/songs' ? 'secondary' : 'ghost'}
+                            variant={pathname === '/music/songs' ? 'secondary' : 'ghost'}
                             className="w-full justify-start font-medium"
                             asChild
                         >
-                            <Link href="/songs">
+                            <Link href="/music/songs">
                                 <Music2 className="mr-2 h-4 w-4" />
                                 All Songs
                             </Link>
                         </Button>
                         <Button
-                            variant={pathname === '/movies' ? 'secondary' : 'ghost'}
+                            variant={pathname === '/music/movies' ? 'secondary' : 'ghost'}
                             className="w-full justify-start font-medium"
                             asChild
                         >
-                            <Link href="/movies">
+                            <Link href="/music/movies">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="m22 8-6 4 6 4V8Z" /><rect width="14" height="12" x="2" y="6" rx="2" ry="2" /></svg>
                                 Movies
                             </Link>
                         </Button>
                         <Button
-                            variant={pathname === '/about-us' ? 'secondary' : 'ghost'}
+                            variant={pathname === '/music/about-us' ? 'secondary' : 'ghost'}
                             className="w-full justify-start font-medium"
                             asChild
                         >
-                            <Link href="/about-us">
+                            <Link href="/music/about-us">
                                 <Info className="mr-2 h-4 w-4" />
                                 サイトについて
                             </Link>
@@ -241,7 +241,7 @@ function GenreSection({
             {isOpen && (
                 <div className="space-y-0.5 animate-in slide-in-from-top-1 fade-in-0 duration-200">
                     {genres.map((genre) => {
-                        const href = `/genre/${genre.slug}`
+                        const href = `/music/genre/${genre.slug}`
                         const isActive = pathname === href
                         return (
                             <Button

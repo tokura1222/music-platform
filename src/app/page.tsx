@@ -1,86 +1,36 @@
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { HeroSection } from "@/components/features/hero-section"
-import { TrackCard } from "@/components/features/track-card"
-import { TrackRow } from "@/components/features/track-row"
-import { getAllTracks } from "@/lib/tracks"
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { Music, AppWindow } from 'lucide-react';
+import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
-export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: { absolute: 'Zion Online｜音楽とアプリのハブ' },
+  description: 'レゲエ音楽と、配信・講義の切り抜きアプリを届けるサイト',
+};
 
-export default async function HomePage() {
-  const tracks = await getAllTracks()
+const entries = [
+  { href: '/music', title: 'Music', desc: 'AIで制作したレゲエ楽曲・映像を無料で楽しめる音楽サイト。', Icon: Music },
+  { href: '/apps', title: 'Apps', desc: '配信・講義の切り抜きなど、AIを活用したアプリとサービス。', Icon: AppWindow },
+];
 
-  // Fallback if no tracks
-  if (tracks.length === 0) {
-    return (
-      <div className="flex h-[calc(100vh-140px)] items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold tracking-tight">No Music Found</h2>
-          <p className="text-muted-foreground mt-2">
-            Upload your first track from the <a href="/manage" className="underline hover:text-primary">Manage Dashboard</a>.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  const featuredTrack = tracks[0];
-  const newReleases = tracks.slice(0, 5);
-  const trending = [...tracks].sort((a, b) => b.plays - a.plays);
-
+export default function HubPage() {
   return (
-    <div className="h-full px-4 py-6 lg:px-8">
-      <div className="space-y-8">
-        {/* Hero Section */}
-        <section>
-          <HeroSection track={featuredTrack} />
-        </section>
-
-        {/* New Releases (Horizontal List) */}
-        <section>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                New Releases
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Fresh reggae vibes for you.
-              </p>
-            </div>
-          </div>
-          <Separator className="my-4" />
-          <div className="relative">
-            <ScrollArea>
-              <div className="flex space-x-4 pb-4">
-                {newReleases.map((track) => (
-                  <TrackCard key={track.id} track={track} playlist={newReleases} />
-                ))}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          </div>
-        </section>
-
-        {/* Trending (Vertical List) */}
-        <section>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Top Charts
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Most played tracks this week.
-              </p>
-            </div>
-          </div>
-          <Separator className="my-4" />
-          <div className="space-y-1">
-            {trending.map((track, i) => (
-              <TrackRow key={track.id} track={track} index={i} playlist={trending} />
-            ))}
-          </div>
-        </section>
-      </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <SiteHeader />
+      <main className="mx-auto max-w-5xl px-6 py-20">
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Zion Online</h1>
+        <p className="mt-4 text-muted-foreground">音楽とアプリを届けるサイトです。</p>
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
+          {entries.map(({ href, title, desc, Icon }) => (
+            <Link key={href} href={href} className="group rounded-xl border border-border/60 bg-card p-8 transition hover:border-primary">
+              <Icon className="h-8 w-8 text-primary" />
+              <h2 className="mt-4 text-2xl font-semibold group-hover:text-primary">{title} →</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+            </Link>
+          ))}
+        </div>
+      </main>
+      <SiteFooter />
     </div>
-  )
+  );
 }
