@@ -10,6 +10,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
+  alternates: { canonical: '/apps/daw' },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

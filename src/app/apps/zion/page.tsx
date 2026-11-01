@@ -5,6 +5,7 @@ import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 export const metadata: Metadata = {
   title: { absolute: 'Zion 切り抜き｜長い配信を字幕つき縦型ショートに' },
   description: '配信者・講義向け。権利のある動画を渡すだけで、字幕つき縦型ショートをAIが作成。無料お試しあり',
+  alternates: { canonical: '/apps/zion' },
   openGraph: {
     title: 'Zion 切り抜き｜長い配信を字幕つき縦型ショートに',
     description: '配信者・講義向け。権利のある動画を渡すだけで、字幕つき縦型ショートをAIが作成。無料お試しあり',

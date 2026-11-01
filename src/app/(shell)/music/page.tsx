@@ -4,6 +4,12 @@ import { HeroSection } from "@/components/features/hero-section"
 import { TrackCard } from "@/components/features/track-card"
 import { TrackRow } from "@/components/features/track-row"
 import { getAllTracks } from "@/lib/tracks"
+import type { Metadata } from "next"
+
+/** Self-canonical on /music only (not inherited by /music/* subpages). */
+export const metadata: Metadata = {
+  alternates: { canonical: "/music" },
+}
 
 export const dynamic = 'force-dynamic'
 
