@@ -6,6 +6,22 @@ import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 export const metadata: Metadata = {
   title: 'Apps',
   description: '配信・講義の切り抜きや、分離・差し替え・再ミックスのDAW（製作中）など、AIを使ったアプリ一覧',
+  alternates: { canonical: '/apps' },
+  openGraph: {
+    title: 'Apps｜Zion Online',
+    description: '配信・講義の切り抜きや、分離・差し替え・再ミックスのDAW（製作中）など、AIを使ったアプリ一覧',
+    url: 'https://www.zion-online.com/apps',
+    siteName: 'Zion Online',
+    locale: 'ja_JP',
+    type: 'website',
+    images: [{ url: '/og/apps_1200x630.png', width: 1200, height: 630, alt: 'Zion Online Apps' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Apps｜Zion Online',
+    description: '配信・講義の切り抜きや、分離・差し替え・再ミックスのDAW（製作中）など、AIを使ったアプリ一覧',
+    images: ['/og/apps_1200x630.png'],
+  },
 };
 
 export default function AppsPage() {

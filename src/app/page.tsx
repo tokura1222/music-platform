@@ -6,6 +6,22 @@ import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 export const metadata: Metadata = {
   title: { absolute: 'Zion Online｜音楽とアプリのハブ' },
   description: 'レゲエ音楽と、配信・講義の切り抜きアプリを届けるサイト',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'Zion Online｜音楽とアプリのハブ',
+    description: 'レゲエ音楽と、配信・講義の切り抜きアプリを届けるサイト',
+    url: 'https://www.zion-online.com/',
+    siteName: 'Zion Online',
+    locale: 'ja_JP',
+    type: 'website',
+    images: [{ url: '/og/hub_1200x630.png', width: 1200, height: 630, alt: 'Zion Online' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Zion Online｜音楽とアプリのハブ',
+    description: 'レゲエ音楽と、配信・講義の切り抜きアプリを届けるサイト',
+    images: ['/og/hub_1200x630.png'],
+  },
 };
 
 const entries = [
