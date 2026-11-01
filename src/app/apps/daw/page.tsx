@@ -17,11 +17,13 @@ export const metadata: Metadata = {
     siteName: 'Zion Online',
     locale: 'ja_JP',
     type: 'website',
+    images: [{ url: '/apps/daw/og_1200x630.png', width: 1200, height: 630, alt: 'Zion DAW（製作中）' }],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
+    images: ['/apps/daw/og_1200x630.png'],
   },
 };
 
