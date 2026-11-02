@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { StemDemo } from '@/components/daw/stem-demo';
 import { DAW_WAITLIST_URL } from '@/lib/site-config';
 import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
@@ -97,6 +98,14 @@ export default function ZionDawPage() {
             height={900}
             className="h-auto w-full rounded-xl border border-border/60"
           />
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">触ってみる</h2>
+          <p className="text-sm text-muted-foreground">
+            1曲を4つのパートに分けたデモです。M(ミュート)とS(ソロ)で、パートごとに聴き比べられます。
+          </p>
+          <StemDemo />
         </section>
 
         <section>
