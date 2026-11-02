@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Music, AppWindow } from 'lucide-react';
-import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
 export const metadata: Metadata = {
   title: { absolute: 'Zion Online｜音楽とアプリのハブ' },
@@ -31,7 +31,7 @@ const entries = [
 
 export default function HubPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SiteShell>
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-6 py-20">
         <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Zion Online</h1>
@@ -47,6 +47,6 @@ export default function HubPage() {
         </div>
       </main>
       <SiteFooter />
-    </div>
+    </SiteShell>
   );
 }

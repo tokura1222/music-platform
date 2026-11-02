@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { DAW_WAITLIST_URL } from '@/lib/site-config';
+import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
 const TITLE = 'Zion DAW（製作中）｜分離から再ミックスまで';
 const DESCRIPTION =
@@ -35,20 +36,32 @@ const steps = [
   ['再ミックス', 'もう一度まとめて聴く'],
 ];
 
-function WaitlistCta() {
+function WaitlistCta({ label = 'ウェイトリストに登録する' }: { label?: string }) {
+  if (!DAW_WAITLIST_URL) {
+    return (
+      <span
+        className="inline-block rounded border border-border px-6 py-3 font-semibold text-muted-foreground"
+        aria-disabled="true"
+      >
+        {label}(準備中)
+      </span>
+    );
+  }
   return (
-    <span
-      className="inline-block rounded-lg border border-border px-6 py-3 font-semibold text-muted-foreground"
-      aria-disabled="true"
+    <a
+      href={DAW_WAITLIST_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block rounded bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:opacity-90"
     >
-      ウェイトリストに登録する（準備中）
-    </span>
+      {label}
+    </a>
   );
 }
 
 export default function ZionDawPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SiteShell>
       <SiteHeader />
       <main className="mx-auto max-w-4xl space-y-16 px-6 py-16">
         <p className="rounded-lg border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground">
@@ -101,10 +114,10 @@ export default function ZionDawPage() {
         <section className="space-y-4 rounded-xl border border-border/60 bg-card p-6 text-center md:p-10">
           <h2 className="text-2xl font-bold">完成に近づいたらお知らせします</h2>
           <p className="text-sm text-muted-foreground md:text-base">
-            試作の進みや先行案内を受け取りたい方は、ウェイトリストへ。受付用のメール窓口は準備中です。
+            試作の進みや先行案内を受け取りたい方は、ウェイトリストへ。
           </p>
           <WaitlistCta />
-          <p className="text-xs text-muted-foreground">登録用アドレスが決まり次第、このボタンから送れます。</p>
+          <p className="text-xs text-muted-foreground">登録いただいた方にだけ、試作の進みと先行案内をお送りします。</p>
         </section>
 
         <section className="space-y-2 text-center">
@@ -116,6 +129,6 @@ export default function ZionDawPage() {
           本ページは開発中サービスの一般的な紹介です。仕様・価格・提供時期は未定で、変更されることがあります。
         </p>
       </SiteFooter>
-    </div>
+    </SiteShell>
   );
 }

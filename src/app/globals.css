@@ -58,3 +58,38 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ---- Zion site theme (hub / apps / legal). Scoped so /music shell is unaffected. ---- */
+@layer base {
+  .zion-theme {
+    /* paper & ink */
+    --background: 42 33% 94%;
+    --foreground: 30 14% 10%;
+    --card: 42 30% 97%;
+    --card-foreground: 30 14% 10%;
+    --primary: 30 14% 10%;
+    --primary-foreground: 42 33% 94%;
+    --secondary: 40 22% 88%;
+    --secondary-foreground: 30 14% 10%;
+    --muted: 40 22% 88%;
+    --muted-foreground: 30 8% 38%;
+    --accent: 40 22% 88%;
+    --accent-foreground: 30 14% 10%;
+    --border: 36 14% 78%;
+    --input: 36 14% 78%;
+    --ring: 30 14% 10%;
+    --radius: 0.25rem;
+    /* stem colors: the site's signature palette */
+    --stem-vocal: 42 88% 48%;
+    --stem-bass: 152 52% 30%;
+    --stem-drums: 8 70% 46%;
+    --stem-other: 222 46% 38%;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", Meiryo, sans-serif;
+  }
+  .zion-theme .font-mono-zion {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    letter-spacing: 0.02em;
+  }
+}

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
-import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
 export const metadata: Metadata = {
   title: 'Apps',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function AppsPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SiteShell>
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight">Apps</h1>
@@ -72,6 +72,6 @@ export default function AppsPage() {
         </div>
       </main>
       <SiteFooter />
-    </div>
+    </SiteShell>
   );
 }

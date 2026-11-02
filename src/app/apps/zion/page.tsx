@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import type { Metadata } from 'next';
-import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
 export const metadata: Metadata = {
   title: { absolute: 'Zion 切り抜き｜長い配信を字幕つき縦型ショートに' },
@@ -81,7 +81,7 @@ function Shot({ src, alt }: { src: string; alt: string }) {
 
 export default function ZionAppPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SiteShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
       <main className="mx-auto max-w-4xl space-y-16 px-6 py-16">
@@ -154,6 +154,6 @@ export default function ZionAppPage() {
       <SiteFooter>
         <p>本ページの内容は一般的なサービスの紹介です。個別の権利判断の助言ではありません。</p>
       </SiteFooter>
-    </div>
+    </SiteShell>
   );
 }
