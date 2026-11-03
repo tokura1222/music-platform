@@ -2,6 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { StemDemo } from '@/components/daw/stem-demo';
 import { HeroLanes, FlowLanes } from '@/components/daw/daw-sections';
+import { FeatureTable, CompanionSection, SpecsSection, PricingSection, RoadmapSection, FaqSection } from '@/components/daw/daw-info-sections';
+import { FAQS } from '@/data/daw-info';
 import { DAW_WAITLIST_URL } from '@/lib/site-config';
 import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
@@ -53,9 +55,16 @@ function WaitlistCta({ label = 'ウェイトリスト登録' }: { label?: string
   );
 }
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+};
+
 export default function ZionDawPage() {
   return (
     <SiteShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
       <main className="mx-auto max-w-5xl space-y-20 px-6 py-16">
         <p className="rounded border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
@@ -105,6 +114,13 @@ export default function ZionDawPage() {
           <p className="mt-2 text-sm text-muted-foreground">取り込んでから仕上げまで、4つの段階を一つの画面でつなぎます。</p>
           <FlowLanes />
         </section>
+
+        <FeatureTable />
+        <CompanionSection />
+        <SpecsSection />
+        <PricingSection />
+        <RoadmapSection />
+        <FaqSection />
 
         <section className="space-y-4 rounded border border-border bg-card p-6 text-center md:p-10">
           <h2 className="text-2xl font-bold">完成に近づいたらお知らせします</h2>
