@@ -215,9 +215,9 @@ export function StemDemo() {
             const audible = gainFor(id) > 0;
             const p = peaks[id];
             return (
-              <div key={id} className="grid grid-cols-[7.5rem_1fr]">
-                <div className="flex items-center justify-between gap-2 border-r border-border px-3 py-3">
-                  <span className="flex items-center gap-2 text-sm font-semibold">
+              <div key={id} className="grid grid-cols-[6.5rem_1fr]">
+                <div className="flex flex-col justify-center gap-2 border-r border-border px-3 py-2">
+                  <span className="flex items-center gap-2 whitespace-nowrap text-sm font-semibold">
                     <i className={`block h-2.5 w-2.5 rounded-full ${dot}`} />
                     {label}
                   </span>
@@ -246,7 +246,7 @@ export function StemDemo() {
                 </div>
                 <div
                   onClick={seek}
-                  className={`flex h-14 cursor-pointer items-center gap-px px-2 transition-opacity ${audible ? 'opacity-100' : 'opacity-25'} ${disabled ? 'cursor-default' : ''}`}
+                  className={`flex h-16 cursor-pointer items-center gap-px px-2 transition-opacity ${audible ? 'opacity-100' : 'opacity-25'} ${disabled ? 'cursor-default' : ''}`}
                 >
                   {(p ?? Array.from({ length: BARS }, () => 0.08)).map((v, i) => (
                     <span key={i} className={`flex-1 rounded-sm ${p ? bar : 'bg-border'}`} style={{ height: `${Math.max(6, v * 100)}%` }} />
@@ -257,7 +257,7 @@ export function StemDemo() {
           })}
         </div>
         {/* playhead */}
-        <div className="pointer-events-none absolute inset-y-0 left-[7.5rem] right-0 px-2">
+        <div className="pointer-events-none absolute inset-y-0 left-[6.5rem] right-0 px-2">
           <div className="relative h-full">
             <div ref={playheadRef} className="absolute inset-y-0 w-px bg-foreground" style={{ left: '0%' }} />
           </div>
