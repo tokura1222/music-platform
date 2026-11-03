@@ -39,7 +39,7 @@ const Ruler = () => (
   </div>
 );
 
-const Lane = ({ stem, seed, density, dim }: { stem: Stem | 'mix'; seed: number; density?: number; dim?: boolean }) => (
+export const Lane = ({ stem, seed, density, dim }: { stem: Stem | 'mix'; seed: number; density?: number; dim?: boolean }) => (
   <div className="flex h-9 items-center gap-px" aria-hidden>
     {bars(seed, 72, density).map((h, i) => (
       <span
