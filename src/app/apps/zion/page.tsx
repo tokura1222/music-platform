@@ -1,6 +1,8 @@
-import Image from 'next/image';
 import type { Metadata } from 'next';
 import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { FaqList } from '@/components/site/faq-list';
+import { ClipsHero } from '@/components/site/clips-hero';
+import { FORM_URL, FLOW, FEATURES, CONDITIONS, PRICING_NOTE, PLANS, FAQS } from '@/data/zion-info';
 
 export const metadata: Metadata = {
   title: { absolute: 'Zion 切り抜き｜長い配信を字幕つき縦型ショートに' },
@@ -25,14 +27,6 @@ export const metadata: Metadata = {
 
 const PAGE_URL = 'https://www.zion-online.com/apps/zion';
 
-const faqs = [
-  ['どんな動画が対象ですか？', 'ご自身に権利のある配信・講義などの映像です。ゲーム実況など第三者の権利が絡む映像はお試しの対象外です。'],
-  ['動画の長さは？', 'お試しは60分以内の動画1本です。'],
-  ['何が届きますか？', '字幕つきの縦型ショート（切り抜き）をお返しします。設定やアプリのインストールは不要です。'],
-  ['料金は？', '先着3名さまは無料です。それ以降の料金は、お試しの結果を見てご案内します。'],
-  ['権利はどうなりますか？', 'お預かりする動画は、ご自身に権利があるものに限ります。個別の権利判断の助言はできません。事例紹介をする場合は、事前に範囲を確認し、ご本人の許可を得てから行います。'],
-];
-
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -47,36 +41,22 @@ const jsonLd = {
     },
     {
       '@type': 'FAQPage',
-      mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+      mainEntity: FAQS.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
     },
   ],
 };
 
-const FORM_URL = 'https://best-skipjack-709.notion.site/9c4c17e758714c4fbcebaee30be64838';
-
-const differentiators = [
-  ['手間なし', '設定やアプリのインストールは不要。こちらで切り抜きまで作ります'],
-  ['X向け縦型', '字幕つきの縦型ショートを前提'],
-  ['権利クリア前提のお試し', '本人に権利のある60分以内の動画だけ受け付けます'],
-];
-
-const conditions = [
-  '先着3名さま無料',
-  'ご自身に権利のある配信・講義など、60分以内の動画1本',
-  'ゲーム実況など第三者の権利が絡む映像は対象外',
-  '出来上がりの切り抜きをお返しします',
-];
-
-function PrimaryCta() {
+function PrimaryCta({ label = '無料お試しに申し込む' }: { label?: string }) {
   return (
-    <a href={FORM_URL} target="_blank" rel="noopener noreferrer" className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:opacity-90">
-      無料お試しに申し込む
+    <a
+      href={FORM_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block rounded bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:opacity-90"
+    >
+      {label}
     </a>
   );
-}
-
-function Shot({ src, alt }: { src: string; alt: string }) {
-  return <Image unoptimized src={src} alt={alt} width={1600} height={900} className="h-auto w-full rounded-xl border border-border/60" />;
 }
 
 export default function ZionAppPage() {
@@ -84,32 +64,57 @@ export default function ZionAppPage() {
     <SiteShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
-      <main className="mx-auto max-w-4xl space-y-16 px-6 py-16">
-        <section className="space-y-6">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">Zion 切り抜き — 長い配信や講義を、字幕つきの縦型ショートにAIで切り抜く</h1>
-          <p className="text-muted-foreground md:text-lg">見どころの選定・縦型化・字幕まで。あなたがやるのは、権利のある動画を渡すことだけです。</p>
-          <div className="flex flex-wrap items-center gap-4">
-            <PrimaryCta />
-            <span className="rounded-lg border border-border px-6 py-3 font-semibold text-muted-foreground">その他のお問い合わせ（準備中）</span>
+      <main className="mx-auto max-w-5xl space-y-20 px-6 py-16">
+        <section className="grid gap-10 md:grid-cols-[1.1fr_1fr] md:items-center">
+          <div className="space-y-6">
+            <p className="font-mono-zion flex items-center gap-2 text-xs tracking-widest">
+              <span className="rounded-sm border border-foreground px-1.5 py-0.5 font-semibold">FREE TRIAL</span>
+              <span className="text-muted-foreground">Zion 切り抜き</span>
+            </p>
+            <h1 className="text-4xl font-bold leading-[1.15] tracking-tight md:text-5xl">
+              長い配信を、
+              <br />
+              字幕つきの
+              <br />
+              縦型ショートに。
+            </h1>
+            <p className="text-muted-foreground md:text-lg">
+              見どころの選定・縦型化・字幕まで。あなたがやるのは、権利のある動画を渡すことだけです。
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <PrimaryCta />
+              <a href="#flow" className="inline-block rounded border border-border px-5 py-3 font-semibold transition hover:border-foreground">
+                流れを見る ↓
+              </a>
+            </div>
+            <p className="text-xs text-muted-foreground">先着3名さま無料・60分以内の動画1本</p>
           </div>
-          <Shot src="/apps/zion/apps_zion_hero_1600x900.svg" alt="Zion 切り抜きのイメージ" />
+          <ClipsHero />
         </section>
 
-        <section>
-          <Shot src="/apps/zion/apps_zion_before_after_1600x900.svg" alt="切り抜き前と後の比較" />
-          <p className="mt-3 text-sm text-muted-foreground">左が元の横長映像、右がAIで作った字幕つき縦型ショートのイメージです（人物は写していません）。</p>
-        </section>
-        <section>
-          <Shot src="/apps/zion/demo_post1_flow_1600x900.svg" alt="動画を渡してから切り抜きが届くまでの流れ" />
-          <p className="mt-3 text-sm text-muted-foreground">文字起こし → 見どころの点数づけ → 話者に合わせた縦型切り取り → 字幕入れ、までを自動で進めます。</p>
+        <section id="flow" className="scroll-mt-8">
+          <h2 className="text-2xl font-bold">流れ</h2>
+          <ol className="mt-8 border-t border-border">
+            {FLOW.map((f) => (
+              <li key={f.no} className="grid gap-2 border-b border-border py-6 md:grid-cols-[8rem_16rem_1fr] md:items-baseline md:gap-8">
+                <div className="flex items-baseline gap-3 md:block">
+                  <span className="font-mono-zion text-3xl font-bold leading-none">{f.no}</span>
+                  <span className="font-mono-zion block text-[10px] tracking-widest text-muted-foreground">{f.en}</span>
+                </div>
+                <h3 className="text-xl font-bold">{f.title}</h3>
+                <p className="text-sm text-muted-foreground">{f.desc}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold">3つの特長</h2>
           <ul className="mt-6 grid gap-4 md:grid-cols-3">
-            {differentiators.map(([t, d]) => (
-              <li key={t} className="rounded-xl border border-border/60 bg-card p-5">
-                <p className="font-semibold text-primary">{t}</p>
+            {FEATURES.map(([t, d], i) => (
+              <li key={t} className="rounded border border-border bg-card p-5">
+                <span aria-hidden className={`mb-3 block h-1 w-8 ${['bg-stem-vocal', 'bg-stem-bass', 'bg-stem-drums'][i]}`} />
+                <p className="font-semibold">{t}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{d}</p>
               </li>
             ))}
@@ -117,39 +122,61 @@ export default function ZionAppPage() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold">無料お試しの条件</h2>
-          <ul className="mt-6 list-disc space-y-2 pl-6">
-            {conditions.map((c) => <li key={c}>{c}</li>)}
-          </ul>
-        </section>
-
-        <section className="space-y-6 text-center">
-          <p className="text-2xl font-bold md:text-3xl">切り抜き1本、いま何分かけていますか？</p>
-          <PrimaryCta />
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-bold">よくある質問</h2>
-          <div className="mt-6 space-y-6">
-            {faqs.map(([q, a]) => (
-              <div key={q}>
-                <h3 className="font-semibold">{q}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{a}</p>
+          <h2 className="text-2xl font-bold">実例</h2>
+          <p className="mt-2 text-sm text-muted-foreground">ご本人の許可をいただいた切り抜きを、準備ができ次第ここに掲載します。</p>
+          <div className="mt-6 grid grid-cols-3 gap-3 md:max-w-xl">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="font-mono-zion flex aspect-[9/16] items-center justify-center rounded border border-dashed border-border bg-card text-[10px] tracking-widest text-muted-foreground">
+                COMING SOON
               </div>
             ))}
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-border/60 bg-card p-6">
-            <p className="font-semibold">無料お試し</p>
-            <p className="mt-2 text-sm text-muted-foreground"><a href={FORM_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">上のフォームから</a></p>
-          </div>
-          <div className="rounded-xl border border-border/60 bg-card p-6">
-            <p className="font-semibold">その他（取材・提携など）</p>
-            <p className="mt-2 text-sm text-muted-foreground">メール窓口は準備中です</p>
+        <section>
+          <h2 className="text-2xl font-bold">無料お試しの条件</h2>
+          <dl className="mt-6 divide-y divide-border border-y border-border">
+            {CONDITIONS.map(([k, v]) => (
+              <div key={k} className="grid gap-1 py-4 md:grid-cols-[12rem_1fr] md:gap-6">
+                <dt className="font-semibold">{k}</dt>
+                <dd className="text-sm text-muted-foreground">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold">
+            料金
+            <span className="font-mono-zion ml-3 rounded-sm border border-border px-1.5 py-0.5 align-middle text-[10px] font-semibold tracking-widest text-muted-foreground">仮</span>
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">{PRICING_NOTE}</p>
+          <div className="mt-6 grid gap-4 md:max-w-2xl md:grid-cols-2">
+            {PLANS.map((p) => (
+              <div key={p.name} className="rounded border border-border bg-card p-6">
+                <p className="font-semibold">{p.name}</p>
+                <p className="font-mono-zion mt-3 text-2xl font-bold">{p.price}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{p.note}</p>
+              </div>
+            ))}
           </div>
         </section>
+
+        <section className="rounded border border-border bg-card p-8 text-center md:p-12">
+          <p className="text-2xl font-bold md:text-3xl">切り抜き1本、いま何分かけていますか?</p>
+          <div className="mt-6">
+            <PrimaryCta />
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold">よくある質問</h2>
+          <FaqList items={FAQS} />
+        </section>
+
+        <p className="text-center text-sm text-muted-foreground">
+          取材・提携などのご相談は、メール窓口を準備中です。
+        </p>
       </main>
       <SiteFooter>
         <p>本ページの内容は一般的なサービスの紹介です。個別の権利判断の助言ではありません。</p>
