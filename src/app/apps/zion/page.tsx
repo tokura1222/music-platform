@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 import { FaqList } from '@/components/site/faq-list';
 import { ClipsHero } from '@/components/site/clips-hero';
+import Link from 'next/link';
+import { TrackedLink } from '@/components/site/tracked-link';
+import { ZION_CHECKOUT_URL } from '@/lib/site-config';
 import { FORM_URL, FLOW, FEATURES, CONDITIONS, PRICING_NOTE, PLANS, FAQS } from '@/data/zion-info';
 
 export const metadata: Metadata = {
@@ -153,13 +156,42 @@ export default function ZionAppPage() {
           <p className="mt-2 text-sm text-muted-foreground">{PRICING_NOTE}</p>
           <div className="mt-6 grid gap-4 md:max-w-2xl md:grid-cols-2">
             {PLANS.map((p) => (
-              <div key={p.name} className="rounded border border-border bg-card p-6">
-                <p className="font-semibold">{p.name}</p>
-                <p className="font-mono-zion mt-3 text-2xl font-bold">{p.price}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{p.note}</p>
+              <div key={p.name} className="flex flex-col justify-between rounded border border-border bg-card p-6">
+                <div>
+                  <p className="font-semibold">{p.name}</p>
+                  <p className="font-mono-zion mt-3 text-2xl font-bold">{p.price}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{p.note}</p>
+                </div>
+                <div className="mt-6">
+                  {p.paid ? (
+                    ZION_CHECKOUT_URL ? (
+                      <TrackedLink
+                        href={ZION_CHECKOUT_URL}
+                        event="begin_checkout"
+                        eventParams={{ item_name: 'zion-clips' }}
+                        className="inline-block rounded bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+                      >
+                        購入する
+                      </TrackedLink>
+                    ) : (
+                      <span className="inline-block rounded border border-border px-5 py-3 text-sm font-semibold text-muted-foreground" aria-disabled="true">
+                        販売準備中
+                      </span>
+                    )
+                  ) : (
+                    <PrimaryCta label="無料お試しに申し込む" />
+                  )}
+                </div>
               </div>
             ))}
           </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            お支払いはクレジットカード等(Stripe)です。購入前に
+            <Link href="/legal/tokushoho" className="underline underline-offset-2 hover:text-foreground">特定商取引法に基づく表記</Link>
+            と
+            <Link href="/legal/terms" className="underline underline-offset-2 hover:text-foreground">利用規約</Link>
+            をご確認ください。
+          </p>
         </section>
 
         <section className="rounded border border-border bg-card p-8 text-center md:p-12">

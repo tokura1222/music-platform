@@ -23,9 +23,9 @@ export const CONDITIONS: [string, string][] = [
 ];
 
 export const PRICING_NOTE = '無料お試しの結果を見て、料金をご案内します。下記は仮の表示です。';
-export const PLANS: { name: string; price: string; note: string }[] = [
+export const PLANS: { name: string; price: string; note: string; paid?: boolean }[] = [
   { name: '無料お試し', price: '¥0', note: '先着3名さま・60分以内の動画1本' },
-  { name: '通常(仮)', price: '¥X,XXX / 本(仮)', note: '料金・納期は確定後にご案内します' },
+  { name: '通常(仮)', price: '¥X,XXX / 本(仮)', note: '料金・納期は確定後にご案内します', paid: true },
 ];
 
 export const FAQS: [string, string][] = [

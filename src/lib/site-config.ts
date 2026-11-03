@@ -19,3 +19,13 @@ export const SELLER = {
   email: PENDING, // 問い合わせ先メール
   invoiceNo: PENDING, // 適格請求書発行事業者の登録番号(未登録なら「未登録」)
 } as const;
+
+/**
+ * Stripe Payment Link for the paid Zion 切り抜き plan.
+ * Create it in the Stripe Dashboard, then set NEXT_PUBLIC_ZION_CHECKOUT_URL in Vercel.
+ * While unset, the page shows "販売準備中" instead of a buy button.
+ */
+export const ZION_CHECKOUT_URL = process.env.NEXT_PUBLIC_ZION_CHECKOUT_URL ?? '';
+
+/** Shown on the post-purchase page. Fill in your real turnaround. */
+export const ZION_DELIVERY_NOTE = PENDING; // 例: 「動画受領後、3営業日以内にお届けします」
