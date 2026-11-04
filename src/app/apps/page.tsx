@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import type { Metadata } from 'next';
-import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { StemsVisual, ClipsVisual } from '@/components/site/app-visuals';
 
 export const metadata: Metadata = {
   title: 'Apps',
@@ -24,54 +24,56 @@ export const metadata: Metadata = {
   },
 };
 
+const apps = [
+  {
+    href: '/apps/daw',
+    title: 'Zion DAW',
+    badge: '製作中',
+    desc: '音源を分離して編集・差し替え、もう一度ミックスするデスクトップDAWを製作中です。',
+    cta: 'ウェイトリストと詳細を見る',
+    visual: <StemsVisual />,
+  },
+  {
+    href: '/apps/zion',
+    title: 'Zion 切り抜き',
+    badge: '無料お試し(先着3名)',
+    desc: '長い配信や講義を、字幕つきの縦型ショートにAIで切り抜きます。',
+    cta: 'お試しの条件を見る',
+    visual: <ClipsVisual />,
+  },
+];
+
 export default function AppsPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SiteShell>
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <h1 className="text-3xl font-bold tracking-tight">Apps</h1>
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <Link
-            href="/apps/zion"
-            className="group overflow-hidden rounded-xl border border-border/60 bg-card transition hover:border-primary"
-          >
-            <Image
-              unoptimized
-              src="/apps/zion/apps_zion_hero_1600x900.svg"
-              alt="Zion 切り抜き"
-              width={1600}
-              height={900}
-              className="h-auto w-full"
-            />
-            <div className="p-6">
-              <h2 className="text-xl font-semibold group-hover:text-primary">Zion 切り抜き →</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                長い配信や講義を、字幕つきの縦型ショートにAIで切り抜きます。
-              </p>
-            </div>
-          </Link>
-          <Link
-            href="/apps/daw"
-            className="group overflow-hidden rounded-xl border border-border/60 bg-card transition hover:border-primary"
-          >
-            <Image
-              unoptimized
-              src="/apps/daw/apps_daw_hero_1600x900.svg"
-              alt="Zion DAW（製作中）"
-              width={1600}
-              height={900}
-              className="h-auto w-full"
-            />
-            <div className="p-6">
-              <h2 className="text-xl font-semibold group-hover:text-primary">Zion DAW（製作中） →</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                音源を分離して編集・差し替え、もう一度ミックスするDAWを製作中です。
-              </p>
-            </div>
-          </Link>
+      <main className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+        <p className="font-mono-zion text-xs tracking-widest text-muted-foreground">APPS</p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">Apps</h1>
+        <p className="mt-4 max-w-xl text-sm text-muted-foreground md:text-base">
+          音と映像を、AIで扱いやすくするアプリとサービス。
+        </p>
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
+          {apps.map((a) => (
+            <Link
+              key={a.href}
+              href={a.href}
+              className="group flex flex-col justify-between gap-8 rounded border border-border bg-card p-6 transition hover:border-foreground"
+            >
+              <div className="flex min-h-[11rem] flex-col justify-center">{a.visual}</div>
+              <div>
+                <p className="font-mono-zion inline-block rounded-sm border border-border px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-muted-foreground">
+                  {a.badge}
+                </p>
+                <h2 className="mt-3 text-2xl font-bold">{a.title}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">{a.desc}</p>
+                <p className="mt-4 text-sm font-semibold underline-offset-4 group-hover:underline">{a.cta} →</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </main>
       <SiteFooter />
-    </div>
+    </SiteShell>
   );
 }

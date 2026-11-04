@@ -46,6 +46,12 @@ module.exports = {
                     DEFAULT: "hsl(var(--popover))",
                     foreground: "hsl(var(--popover-foreground))",
                 },
+                stem: {
+                    vocal: "hsl(var(--stem-vocal, 42 88% 48%))",
+                    bass: "hsl(var(--stem-bass, 152 52% 30%))",
+                    drums: "hsl(var(--stem-drums, 8 70% 46%))",
+                    other: "hsl(var(--stem-other, 222 46% 38%))",
+                },
                 card: {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",

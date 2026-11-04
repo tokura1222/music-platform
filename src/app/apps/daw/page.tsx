@@ -1,7 +1,11 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { SiteHeader, SiteFooter } from '@/components/site/site-chrome';
+import { StemDemo } from '@/components/daw/stem-demo';
+import { HeroLanes, FlowLanes } from '@/components/daw/daw-sections';
+import { FeatureTable, CompanionSection, SpecsSection, PricingSection, RoadmapSection, FaqSection } from '@/components/daw/daw-info-sections';
+import { FAQS } from '@/data/daw-info';
+import { DAW_WAITLIST_URL } from '@/lib/site-config';
+import { SiteShell, SiteHeader, SiteFooter } from '@/components/site/site-chrome';
 
 const TITLE = 'Zion DAW（製作中）｜分離から再ミックスまで';
 const DESCRIPTION =
@@ -28,83 +32,103 @@ export const metadata: Metadata = {
   },
 };
 
-const steps = [
-  ['分離', '混ざった音源をステムに分ける'],
-  ['編集', '分けたトラックを整える'],
-  ['差し替え', 'パートを差し替えて試す'],
-  ['再ミックス', 'もう一度まとめて聴く'],
-];
-
-function WaitlistCta() {
+function WaitlistCta({ label = 'ウェイトリスト登録' }: { label?: string }) {
+  if (!DAW_WAITLIST_URL) {
+    return (
+      <span
+        className="inline-block rounded border border-border px-5 py-3 font-semibold text-muted-foreground"
+        aria-disabled="true"
+      >
+        {label}(準備中)
+      </span>
+    );
+  }
   return (
-    <span
-      className="inline-block rounded-lg border border-border px-6 py-3 font-semibold text-muted-foreground"
-      aria-disabled="true"
+    <a
+      href={DAW_WAITLIST_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block rounded bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:opacity-90"
     >
-      ウェイトリストに登録する（準備中）
-    </span>
+      {label}
+    </a>
   );
 }
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+};
+
 export default function ZionDawPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SiteShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
-      <main className="mx-auto max-w-4xl space-y-16 px-6 py-16">
-        <p className="rounded-lg border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground">
+      <main className="mx-auto max-w-5xl space-y-20 px-6 py-16">
+        <p className="rounded border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           このページのアプリは<strong className="text-foreground">製作中</strong>
           です。画面や仕様は変わることがあります。価格・発売日はまだ決まっていません。
         </p>
 
-        <section className="space-y-6">
-          <span className="inline-block rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary">
-            製作中
-          </span>
-          <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
-            音源を分離して、差し替えて、もう一度ミックスする
-          </h1>
-          <p className="text-sm font-medium text-primary">Zion DAW（製作中）</p>
-          <p className="text-muted-foreground md:text-lg">
-            混ざった音をバラし、編集して、パートを差し替え、再ミックスまで。その流れを一つのデスクトップDAWでつなぐことを目指しています。
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <WaitlistCta />
-            <Link
-              href="/apps"
-              className="inline-block rounded-lg border border-border px-6 py-3 font-semibold transition hover:border-primary hover:text-primary"
-            >
-              他のアプリを見る
-            </Link>
+        <section className="grid gap-10 md:grid-cols-[1.1fr_1fr] md:items-center">
+          <div className="space-y-6">
+            <p className="font-mono-zion flex items-center gap-2 text-xs tracking-widest">
+              <span className="rounded-sm border border-foreground px-1.5 py-0.5 font-semibold">PROTOTYPE</span>
+              <span className="text-muted-foreground">Zion DAW（製作中）</span>
+            </p>
+            <h1 className="text-4xl font-bold leading-[1.15] tracking-tight md:text-5xl">
+              混ざった音を、
+              <br />
+              パートごとに
+              <br />
+              触れるように。
+            </h1>
+            <p className="text-muted-foreground md:text-lg">
+              分離して、編集して、パートを差し替えて、もう一度ミックスする。その流れを、一つのデスクトップDAWでつなぐことを目指しています。
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <WaitlistCta />
+              <Link
+                href="#demo"
+                className="inline-block rounded border border-border px-5 py-3 font-semibold transition hover:border-foreground"
+              >
+                デモを聴く ↓
+              </Link>
+            </div>
           </div>
-          <Image
-            unoptimized
-            src="/apps/daw/apps_daw_hero_1600x900.svg"
-            alt="分離・編集・差し替え・再ミックスの流れのイメージ"
-            width={1600}
-            height={900}
-            className="h-auto w-full rounded-xl border border-border/60"
-          />
+          <HeroLanes />
+        </section>
+
+        <section id="demo" className="scroll-mt-8 space-y-4">
+          <h2 className="text-2xl font-bold">触ってみる</h2>
+          <p className="text-sm text-muted-foreground">
+            1曲を4つのパートに分けたデモです。M(ミュート)とS(ソロ)で、パートごとに聴き比べられます。
+          </p>
+          <StemDemo />
         </section>
 
         <section>
           <h2 className="text-2xl font-bold">流れ</h2>
-          <ol className="mt-6 grid gap-4 md:grid-cols-2">
-            {steps.map(([t, d], i) => (
-              <li key={t} className="rounded-xl border border-border/60 bg-card p-5">
-                <p className="text-xs font-semibold text-muted-foreground">{i + 1}. {t}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{d}</p>
-              </li>
-            ))}
-          </ol>
+          <p className="mt-2 text-sm text-muted-foreground">取り込んでから仕上げまで、4つの段階を一つの画面でつなぎます。</p>
+          <FlowLanes />
         </section>
 
-        <section className="space-y-4 rounded-xl border border-border/60 bg-card p-6 text-center md:p-10">
+        <FeatureTable />
+        <CompanionSection />
+        <SpecsSection />
+        <PricingSection />
+        <RoadmapSection />
+        <FaqSection />
+
+        <section className="space-y-4 rounded border border-border bg-card p-6 text-center md:p-10">
           <h2 className="text-2xl font-bold">完成に近づいたらお知らせします</h2>
           <p className="text-sm text-muted-foreground md:text-base">
-            試作の進みや先行案内を受け取りたい方は、ウェイトリストへ。受付用のメール窓口は準備中です。
+            試作の進みや先行案内を受け取りたい方は、ウェイトリストへ。
           </p>
           <WaitlistCta />
-          <p className="text-xs text-muted-foreground">登録用アドレスが決まり次第、このボタンから送れます。</p>
+          <p className="text-xs text-muted-foreground">登録いただいた方にだけ、試作の進みと先行案内をお送りします。</p>
         </section>
 
         <section className="space-y-2 text-center">
@@ -116,6 +140,6 @@ export default function ZionDawPage() {
           本ページは開発中サービスの一般的な紹介です。仕様・価格・提供時期は未定で、変更されることがあります。
         </p>
       </SiteFooter>
-    </div>
+    </SiteShell>
   );
 }
